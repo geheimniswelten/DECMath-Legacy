@@ -1,0 +1,74 @@
+Schönhage ---------------------------------------------------------
+         1!      0.12 ms,          1 digits,     A505DF1B
+         2!      0.02 ms,          1 digits,     3C0C8EA1      0.13
+         4!      0.05 ms,          2 digits,     C16E77DB      3.48
+         8!      0.05 ms,          5 digits,     F4E4654D      0.97
+        16!      0.05 ms,         14 digits,     C684E853      1.05
+        32!      0.06 ms,         36 digits,     E543718D      1.05
+        64!      0.06 ms,         90 digits,     487EB6ED      1.11
+       128!      0.07 ms,        216 digits,     1594FC32      1.14
+       256!      0.08 ms,        507 digits,     2D376DAF      1.12
+       512!      0.11 ms,       1167 digits,     27D5F7A4      1.41
+      1024!      0.21 ms,       2640 digits,     139FCF02      1.82
+      2048!      0.49 ms,       5895 digits,     132D7462      2.36
+      4096!      1.41 ms,      13020 digits,     57923773      2.87
+      8192!      4.28 ms,      28504 digits,     2B070CFC      3.04
+     16384!     13.48 ms,      61937 digits,     41197FC0      3.15
+     32768!     41.26 ms,     133734 digits,     2BFD844B      3.06
+     65536!    126.22 ms,     287194 digits,     CB350033      3.06
+    131072!    322.26 ms,     613842 digits,     9F796F11      2.55
+    262144!    677.90 ms,    1306594 digits,     DF42B71E      2.10
+    524288!   1577.68 ms,    2771010 digits,     49EC1DBA      2.33
+   1048576!   4300.45 ms,    5857670 digits,     BE5195F8      2.73
+   2097152!  10446.01 ms,   12346641 digits,     A6EC7B14      2.43
+
+Luschny------------------------------------------------------------
+         1!      1.40 ms,          1 digits,     A505DF1B
+         2!      0.02 ms,          1 digits,     3C0C8EA1      0.01
+         4!      0.05 ms,          2 digits,     C16E77DB      2.36
+         8!      0.05 ms,          5 digits,     F4E4654D      1.07
+        16!      0.06 ms,         14 digits,     C684E853      1.26
+        32!      0.05 ms,         36 digits,     E543718D      0.76
+        64!      0.05 ms,         90 digits,     487EB6ED      1.16
+       128!      0.06 ms,        216 digits,     1594FC32      1.14
+       256!      0.08 ms,        507 digits,     2D376DAF      1.26
+       512!      0.10 ms,       1167 digits,     27D5F7A4      1.33
+      1024!      0.20 ms,       2640 digits,     139FCF02      1.90
+      2048!      0.48 ms,       5895 digits,     132D7462      2.43
+      4096!      1.35 ms,      13020 digits,     57923773      2.80
+      8192!      4.58 ms,      28504 digits,     2B070CFC      3.40
+     16384!     13.65 ms,      61937 digits,     41197FC0      2.98
+     32768!     40.68 ms,     133734 digits,     2BFD844B      2.98
+     65536!    124.16 ms,     287194 digits,     CB350033      3.05
+    131072!    317.72 ms,     613842 digits,     9F796F11      2.56
+    262144!    675.54 ms,    1306594 digits,     DF42B71E      2.13
+    524288!   1579.88 ms,    2771010 digits,     49EC1DBA      2.34
+   1048576!   4282.72 ms,    5857670 digits,     BE5195F8      2.71
+   2097152!  10455.13 ms,   12346641 digits,     A6EC7B14      2.42
+
+Reddmann, Binomial_Factorial---------------------------------------
+         1!      0.02 ms,          1 digits,     A505DF1B
+         2!      0.03 ms,          1 digits,     3C0C8EA1      1.52
+         4!      0.06 ms,          2 digits,     C16E77DB      2.06
+         8!      0.06 ms,          5 digits,     F4E4654D      1.09
+        16!      0.07 ms,         14 digits,     C684E853      1.20
+        32!      0.09 ms,         36 digits,     E543718D      1.19
+        64!      0.10 ms,         90 digits,     487EB6ED      1.17
+       128!      0.12 ms,        216 digits,     1594FC32      1.23
+       256!      0.15 ms,        507 digits,     2D376DAF      1.22
+       512!      0.19 ms,       1167 digits,     27D5F7A4      1.27
+      1024!      0.31 ms,       2640 digits,     139FCF02      1.58
+      2048!      0.65 ms,       5895 digits,     132D7462      2.12
+      4096!      1.56 ms,      13020 digits,     57923773      2.41
+      8192!      4.63 ms,      28504 digits,     2B070CFC      2.96
+     16384!     14.36 ms,      61937 digits,     41197FC0      3.10
+     32768!     41.47 ms,     133734 digits,     2BFD844B      2.89
+     65536!    124.83 ms,     287194 digits,     CB350033      3.01
+    131072!    323.23 ms,     613842 digits,     9F796F11      2.59
+    262144!    682.29 ms,    1306594 digits,     DF42B71E      2.11
+    524288!   1579.03 ms,    2771010 digits,     49EC1DBA      2.31
+   1048576!   4312.58 ms,    5857670 digits,     BE5195F8      2.73
+   2097152!  10491.72 ms,   12346641 digits,     A6EC7B14      2.43
+
+
+Schwankungen im 250 ms Bereich sind begründet im Windows Tasking System
