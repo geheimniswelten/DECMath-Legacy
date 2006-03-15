@@ -1,0 +1,59 @@
+package DEC;
+
+{$R *.RES}
+{$ALIGN ON}
+{$ASSERTIONS OFF}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS OFF}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE ON}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST ON}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'DEC Package'}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  vcl50;
+
+contains
+  DECFmt in '..\Part_I\DECFmt.pas',
+  CPU in '..\Part_I\CPU.pas',
+  CRC in '..\Part_I\CRC.pas',
+  DECCipher in '..\Part_I\DECCipher.pas',
+  DECData in '..\Part_I\DECData.pas',
+  ASN1 in '..\Part_I\ASN1.pas',
+  DECHash in '..\Part_I\DECHash.pas',
+  DECRandom in '..\Part_I\DECRandom.pas',
+  DECUtil in '..\Part_I\DECUtil.pas',
+  LHSZ in '..\Part_I\LHSZ.pas',
+  IDPrimes in '..\Part_II\IDPrimes.pas',
+  IsPrimeHRUnit in '..\Part_II\IsPrimeHRUnit.pas',
+  NCombi in '..\Part_II\NCombi.pas',
+  NGFPBld in '..\Part_II\NGFPBld.pas',
+  NGFPs in '..\Part_II\NGFPs.pas',
+  NGFPTab in '..\Part_II\NGFPTab.pas',
+  NInt_1 in '..\Part_II\NInt_1.pas',
+  NIntM in '..\Part_II\NIntM.pas',
+  NInts in '..\Part_II\NInts.pas',
+  NMath in '..\Part_II\NMath.pas',
+  NPolys in '..\Part_II\NPolys.pas',
+  NRats in '..\Part_II\NRats.pas',
+  Prime in '..\Part_II\Prime.pas',
+  Console in '..\Console\Console.pas',
+  ConsoleForm in '..\Console\ConsoleForm.pas' {ConsoleMainForm};
+
+end.
