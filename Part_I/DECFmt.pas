@@ -1,13 +1,23 @@
-{Copyright:      Hagen Reddmann  HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
- Version:        5.1, Delphi Encryption Compendium
-                 Delphi 5-7, BCB 3-4, designed and testet under D5
- Description:    Format Konvertion Utilitys for the DEC Packages
- known Problems: none
- Remarks:        freeware, but this Copyright must be included
-                 add about 10Kb code if all TFormats used
-                 designed to made universal code, not very fast implementations
-                 use lookup tables and formats can contains special chars
+{*****************************************************************************
+
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Author:  (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
+
+  Description:      Format conversion utilities for DEC
+
+  Remarks:          adds about 10Kb code if all TFormats are used,
+                    designed to made universal code (not for speed),
+
+  Unicode Remarks:  format conversions support ANSI input due to the given
+                    RFC Specs, to preserve unicode use Delphi's UTF8Encode and
+                    UTF8Decode before conversion
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -20,7 +30,8 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-}
+
+*****************************************************************************}
 
 unit DECFmt;
 
@@ -33,7 +44,7 @@ uses Windows, SysUtils, Classes, DECUtil;
 type
   TDECFormat      = class;
 
-  TFormat_Copy    = class;    // copy input to output, it's the Default Format, eg FormaClass = nil
+  TFormat_Copy    = class;    // copy input to output, it's the default format, e.g. FormatClass = nil
   TFormat_HEX     = class;    // HEXadecimal in UpperCase
   TFormat_HEXL    = class;    // HEXadecimal in Lowercase
   TFormat_MIME32  = class;    // MIME like format for Base 32
@@ -72,12 +83,12 @@ type
     class function DoDecode(const Value; Size: Integer): Binary; override;
     class function DoIsValid(const Value; Size: Integer): Boolean; override;
   public
-    class function CharTable: PChar; virtual;
+    class function CharTable: PAnsiChar; virtual;
   end;
 
   TFormat_HEXL = class(TFormat_HEX) // Hexadecimal lowercase = fmtHEXL
   public
-    class function CharTable: PChar; override;
+    class function CharTable: PAnsiChar; override;
   end;
 
   TFormat_MIME32 = class(TFormat_HEX)  // MIME Base 32 = fmtMIME32
@@ -85,7 +96,7 @@ type
     class function DoEncode(const Value; Size: Integer): Binary; override;
     class function DoDecode(const Value; Size: Integer): Binary; override;
   public
-    class function CharTable: PChar; override;
+    class function CharTable: PAnsiChar; override;
   end;
 
   TFormat_MIME64 = class(TFormat_HEX)  // MIME Base 64 = fmtMIME64
@@ -93,7 +104,7 @@ type
     class function DoEncode(const Value; Size: Integer): Binary; override;
     class function DoDecode(const Value; Size: Integer): Binary; override;
   public
-    class function CharTable: PChar; override;
+    class function CharTable: PAnsiChar; override;
   end;
 
   TFormat_PGP = class(TFormat_MIME64)
@@ -109,12 +120,12 @@ type
     class function DoDecode(const Value; Size: Integer): Binary; override;
     class function DoIsValid(const Value; Size: Integer): Boolean; override;
   public
-    class function CharTable: PChar; virtual;
+    class function CharTable: PAnsiChar; virtual;
   end;
 
   TFormat_XX = class(TFormat_UU) // XX Encode = fmtXX
   public
-    class function CharTable: PChar; override;
+    class function CharTable: PAnsiChar; override;
   end;
 
   TFormat_ESCAPE = class(TDECFormat)
@@ -123,17 +134,17 @@ type
     class function DoDecode(const Value; Size: Integer): Binary; override;
   end;
 
-function  ValidFormat(FormatClass: TDECFormatClass = nil): TDECFormatClass;
-function  FormatByName(const Name: String): TDECFormatClass;
-function  FormatByIdentity(Identity: LongWord): TDECFormatClass;
+function ValidFormat(FormatClass: TDECFormatClass = nil): TDECFormatClass;
+function FormatByName(const Name: String): TDECFormatClass;
+function FormatByIdentity(Identity: LongWord): TDECFormatClass;
 // insert #13#10 Chars in Blocks from BlockSize
-function InsertCR(const Value: String; BlockSize: Integer): String;
+function InsertCR(const Value: AnsiString; BlockSize: Integer): AnsiString;
 // delete all #13 and #10 Chars
-function DeleteCR(const Value: String): String;
+function DeleteCR(const Value: AnsiString): AnsiString;
 // format any String to a Block
-function InsertBlocks(const Value, BlockStart, BlockEnd: String; BlockSize: Integer): String;
+function InsertBlocks(const Value, BlockStart, BlockEnd: AnsiString; BlockSize: Integer): AnsiString;
 // remove any Block format
-function RemoveBlocks(const Value, BlockStart, BlockEnd: String): String;
+function RemoveBlocks(const Value, BlockStart, BlockEnd: AnsiString): AnsiString;
 
 var
   PGPCharsPerLine: Integer = 80;
@@ -143,10 +154,10 @@ implementation
 uses CRC;
 
 resourcestring
-  sStringFormatExists     = 'String format "%d" not exists.';
-  sInvalidStringFormat    = 'Input is not an valid %s Format.';
-  sInvalidFormatString    = 'Input can not be convert to %s Format.';
-  sFormatNotRegistered    = 'String format not registered.';
+  sStringFormatExists  = 'String format "%d" does not exist.';
+  sInvalidStringFormat = 'Input is not an valid %s format.';
+  sInvalidFormatString = 'Input can not be converted to %s format.';
+  sFormatNotRegistered = 'String format is not registered.';
 
 function ValidFormat(FormatClass: TDECFormatClass = nil): TDECFormatClass;
 begin
@@ -194,25 +205,25 @@ begin
   Result := DoIsValid(Value, Size);
 end;
 
-// .TFormat_Copy
+// TFormat_Copy
 class function TFormat_Copy.DoEncode(const Value; Size: Integer): Binary;
 begin
   SetLength(Result, Size);
   Move(Value, Result[1], Size);
 end;
 
-class function  TFormat_Copy.DoDecode(const Value; Size: Integer): Binary;
+class function TFormat_Copy.DoDecode(const Value; Size: Integer): Binary;
 begin
   SetLength(Result, Size);
   Move(Value, Result[1], Size);
 end;
 
-class function  TFormat_Copy.DoIsValid(const Value; Size: Integer): Boolean;
+class function TFormat_Copy.DoIsValid(const Value; Size: Integer): Boolean;
 begin
   Result := Size >= 0;
 end;
 
-function TableFind(Value: Char; Table: PChar; Len: Integer): Integer; assembler;
+function TableFind(Value: AnsiChar; Table: PAnsiChar; Len: Integer): Integer; assembler;
 asm // Utility for TStringFormat_XXXXX
       PUSH  EDI
       MOV   EDI,EDX
@@ -228,13 +239,13 @@ end;
 class function TFormat_HEX.DoEncode(const Value; Size: Integer): Binary;
 var
   S: PByte;
-  D,T: PChar;
+  D,T: PAnsiChar;
 begin
   Result := '';
   if Size <= 0 then Exit;
   SetLength(Result, Size * 2);
   T := CharTable;
-  D := PChar(Result);
+  D := PAnsiChar(Result);
   S := PByte(@Value);
   while Size > 0 do
   begin
@@ -248,9 +259,9 @@ end;
 
 class function TFormat_HEX.DoDecode(const Value; Size: Integer): Binary;
 var
-  S: PChar;
+  S: PAnsiChar;
   D: PByte;
-  T: PChar;
+  T: PAnsiChar;
   I,P: Integer;
   HasIdent: Boolean;
 begin
@@ -259,7 +270,7 @@ begin
   SetLength(Result, Size div 2 +1);
   T := CharTable;
   D := PByte(Result);
-  S := PChar(@Value);
+  S := PAnsiChar(@Value);
   I := 0;
   HasIdent := False;
   while Size > 0 do
@@ -289,18 +300,18 @@ begin
       end;
     Dec(Size);
   end;
-  SetLength(Result, PChar(D) - PChar(Result));
+  SetLength(Result, PAnsiChar(D) - PAnsiChar(Result));
 end;
 
 class function TFormat_HEX.DoIsValid(const Value; Size: Integer): Boolean;
 var
-  S,T: PChar;
+  S,T: PAnsiChar;
   L: Integer;
 begin
   Result := True;
   T := CharTable;
   L := StrLen(T);
-  S := PChar(@Value);
+  S := PAnsiChar(@Value);
   while Result and (Size > 0) do
     if TableFind(S^, T, L) >= 0 then
     begin
@@ -309,7 +320,7 @@ begin
     end else Result := False;
 end;
 
-class function TFormat_HEX.CharTable: PChar; assembler;
+class function TFormat_HEX.CharTable: PAnsiChar; assembler;
 asm
       MOV  EAX,OFFSET @@1
       RET
@@ -317,7 +328,7 @@ asm
       DB   'X$ abcdefhHx()[]{},;:-_/\*+"''',9,10,13,0
 end;
 
-class function TFormat_HEXL.CharTable: PChar;
+class function TFormat_HEXL.CharTable: PAnsiChar;
 asm
       MOV  EAX,OFFSET @@1
       RET
@@ -328,14 +339,14 @@ end;
 class function TFormat_MIME32.DoEncode(const Value; Size: Integer): Binary;
 var
   S: PByteArray;
-  D,T: PChar;
+  D,T: PAnsiChar;
   I: Integer;
 begin
   Result := '';
   if Size <= 0 then Exit;
   Size := Size * 8;
   SetLength(Result, Size div 5 + 5);
-  D := PChar(Result);
+  D := PAnsiChar(Result);
   T := CharTable;
   S := PByteArray(@Value);
   I := 0;
@@ -345,21 +356,21 @@ begin
     Inc(D);
     Inc(I, 5);
   end;
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
 class function TFormat_MIME32.DoDecode(const Value; Size: Integer): Binary;
 var
-  S,T,D: PChar;
+  S,T,D: PAnsiChar;
   I,V: Integer;
 begin
   Result := '';
   if Size <= 0 then Exit;
   T := CharTable;
   SetLength(Result, Size * 5 div 8);
-  D := PChar(Result);
+  D := PAnsiChar(Result);
   FillChar(D^, Length(Result), 0);
-  S := PChar(@Value);
+  S := PAnsiChar(@Value);
   Size := Size * 5;
   I := 0;
   while I < Size do
@@ -376,7 +387,7 @@ begin
   SetLength(Result, Size div 8);
 end;
 
-class function TFormat_MIME32.CharTable: PChar;
+class function TFormat_MIME32.CharTable: PAnsiChar;
 asm
       MOV  EAX,OFFSET @@1
       RET  // must be >= 32 Chars
@@ -388,13 +399,13 @@ class function TFormat_MIME64.DoEncode(const Value; Size: Integer): Binary;
 var
   B: Cardinal;
   I: Integer;
-  D,T: PChar;
+  D,T: PAnsiChar;
   S: PByteArray;
 begin
   Result := '';
   if Size <= 0 then Exit;
   SetLength(Result, Size * 4 div 3 + 4);
-  D := PChar(Result);
+  D := PAnsiChar(Result);
   T := CharTable;
   S := PByteArray(@Value);
   while Size >= 3 do
@@ -432,21 +443,21 @@ begin
     end;
     Inc(D, 4);
   end;
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
 class function TFormat_MIME64.DoDecode(const Value; Size: Integer): Binary;
 var
   B: Cardinal;
   J,I: Integer;
-  S,D,L,T: PChar;
+  S,D,L,T: PAnsiChar;
 begin
   Result := '';
   if Size <= 0 then Exit;
   SetLength(Result, Size);
-  Move(Value, PChar(Result)^, Size);
+  Move(Value, PAnsiChar(Result)^, Size);
   T := CharTable;
-  D := PChar(Result);
+  D := PAnsiChar(Result);
   S := D;
   L := S + Size;
   J := 0;
@@ -474,16 +485,16 @@ begin
     I := 2;
     while I >= 0 do
     begin
-      D[I] := Char(B);
+      D[I] := AnsiChar(B);
       B := B shr 8;
       Dec(I);
     end;
     Inc(D, 3);
   end;
-  SetLength(Result, D - PChar(Result) - J);
+  SetLength(Result, D - PAnsiChar(Result) - J);
 end;
 
-class function TFormat_MIME64.CharTable: PChar; assembler;
+class function TFormat_MIME64.CharTable: PAnsiChar; assembler;
 asm
       MOV  EAX,OFFSET @@1
       RET  // must be >= 65 Chars
@@ -493,24 +504,24 @@ end;
 
 class function TFormat_PGP.DoExtractCRC(const Value; var Size: Integer): LongWord;
 var
-  L: PChar;
-  C: Char;
-  R: String;
+  L: PAnsiChar;
+  C: ANsiChar;
+  R: AnsiString;
 begin
   Result := $FFFFFFFF;
-  C := CharTable[64];                      // get padding char, per default '='
-  L := PChar(@Value) + Size;
-  while L <> PChar(@Value) do
-    if L^ = C then Break else Dec(L);      // scan reverse for padding char
-  if L - PChar(@Value) >= Size - 5 then    // remaining chars must be > 4 ,i.e. '=XQRT'
+  C := CharTable[64];                       // get padding char, per default '='
+  L := PAnsiChar(@Value) + Size;
+  while L <> PAnsiChar(@Value) do
+    if L^ = C then Break else Dec(L);       // scan reverse for padding char
+  if L - PAnsiChar(@Value) >= Size - 5 then // remaining chars must be > 4 ,i.e. '=XQRT'
   try
     Inc(L);
-    R := inherited DoDecode(L^, Size - (L - PChar(@Value)));
+    R := inherited DoDecode(L^, Size - (L - PAnsiChar(@Value)));
     if Length(R) >= 3 then
     begin
       Result := 0;
-      Move(PChar(R)^, Result, 3);
-      Size := L - PChar(@Value);
+      Move(PAnsiChar(R)^, Result, 3);
+      Size := L - PAnsiChar(@Value);
     end;
   except
   end;
@@ -540,23 +551,23 @@ begin
   if CRC <> $FFFFFFFF then // iff CRC found check it
   begin
     SwapBytes(CRC, 3);
-    if CRC <> CRCCalc(CRC_24, PChar(Result)^, Length(Result)) then
+    if CRC <> CRCCalc(CRC_24, PAnsiChar(Result)^, Length(Result)) then
       raise EDECException.CreateFmt(sInvalidStringFormat, [DECClassname(Self)]);
   end;
 end;
 
 class function TFormat_UU.DoEncode(const Value; Size: Integer): Binary;
 var
-  S,T,D: PChar;
+  S,T,D: PAnsiChar;
   L,I: Integer;
   B: Cardinal;
 begin
   Result := '';
   if Size <= 0 then Exit;
   SetLength(Result, Size * 4 div 3 + Size div 45 + 10);
-  D := PChar(Result);
+  D := PAnsiChar(Result);
   T := CharTable;
-  S := PChar(@Value);
+  S := PAnsiChar(@Value);
   while Size > 0 do
   begin
     L := Size;
@@ -585,21 +596,21 @@ begin
     end;
     Inc(D);
   end;
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
 class function TFormat_UU.DoDecode(const Value; Size: Integer): Binary;
 var
-  T,D,L,S: PChar;
+  T,D,L,S: PAnsiChar;
   I,E: Integer;
   B: Cardinal;
 begin
   Result := '';
   if Size <= 0 then Exit;
   SetLength(Result, Size);
-  S := PChar(@Value);
+  S := PAnsiChar(@Value);
   L := S + Size;
-  D := PChar(Result);
+  D := PAnsiChar(Result);
   T := CharTable;
   repeat
     Size := TableFind(S^, T, 64);
@@ -622,7 +633,7 @@ begin
       end;
       I := 2;
       repeat
-        D[I] := Char(B);
+        D[I] := AnsiChar(B);
         B    := B shr 8;
         Dec(I);
       until I < 0;
@@ -630,18 +641,18 @@ begin
       Dec(Size, 3);
     end;
   until S >= L;
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
 class function TFormat_UU.DoIsValid(const Value; Size: Integer): Boolean;
 var
-  S,T: PChar;
+  S,T: PAnsiChar;
   L,I,P: Integer;
 begin
   Result := False;
   T := CharTable;
   L := StrLen(T);
-  S := PChar(@Value);
+  S := PAnsiChar(@Value);
   P := 0;
   while Size > 0 do
   begin
@@ -662,7 +673,7 @@ begin
   Result := True;
 end;
 
-class function TFormat_UU.CharTable: PChar;
+class function TFormat_UU.CharTable: PAnsiChar;
 asm
       MOV  EAX,OFFSET @@1
       RET  // must be >= 64 Chars
@@ -670,7 +681,7 @@ asm
       DB   ' ',9,10,13,0
 end;
 
-class function TFormat_XX.CharTable: PChar;
+class function TFormat_XX.CharTable: PAnsiChar;
 asm
       MOV  EAX,OFFSET @@1
       RET
@@ -679,19 +690,19 @@ asm
 end;
 
 const
-  ESCAPE_CodesL: PChar = 'abtnvfr';
-  ESCAPE_CodesU: PChar = 'ABTNVFR';
+  ESCAPE_CodesL: PAnsiChar = 'abtnvfr';
+  ESCAPE_CodesU: PAnsiChar = 'ABTNVFR';
 
 class function TFormat_ESCAPE.DoDecode(const Value; Size: Integer): Binary;
 var
-  D,S,T: PChar;
+  D,S,T: PAnsiChar;
   I: Integer;
 begin
   Result := '';
   if Size <= 0 then Exit;
   SetLength(Result, Size);
-  D := PChar(Result);
-  S := PChar(@Value);
+  D := PAnsiChar(Result);
+  S := PAnsiChar(@Value);
   T := S + Size;
   while S < T do
   begin
@@ -706,45 +717,45 @@ begin
         I := TableFind(UpCase(S[1]), TFormat_HEX.CharTable, 16);
         if I < 0 then
           raise EDECException.CreateFmt(sInvalidStringFormat, [DECClassName(Self)]);
-        D^ := Char(I shl 4);
+        D^ := AnsiChar(I shl 4);
         I := TableFind(UpCase(S[2]), TFormat_HEX.CharTable, 16);
         if I < 0 then
           raise EDECException.CreateFmt(sInvalidStringFormat, [DECClassName(Self)]);
-        D^ := Char(Byte(D^) or I);
+        D^ := AnsiChar(Byte(D^) or I);
         Inc(S, 2);
       end else
       begin
         I := TableFind(UpCase(S^), ESCAPE_CodesU, 7);
-        if I >= 0 then D^ := Char(I + 7)
+        if I >= 0 then D^ := AnsiChar(I + 7)
           else D^ := S^;
       end;
     end else D^ := S^;
     Inc(D);
     Inc(S);
   end;
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
 class function TFormat_ESCAPE.DoEncode(const Value; Size: Integer): Binary;
 var
   S: PByte;
-  D,T: PChar;
+  D,T: PAnsiChar;
   I: Integer;
 begin
   Result := '';
   if Size = 0 then Exit;
   SetLength(Result, Size + 8);
   I := Size;
-  D := PChar(Result);
+  D := PAnsiChar(Result);
   S := PByte(@Value);
   T := TFormat_HEX.CharTable;
   while Size > 0 do
   begin
     if I <= 0 then
     begin
-      I := D - PChar(Result);
+      I := D - PAnsiChar(Result);
       SetLength(Result, I + Size + 8);
-      D := PChar(Result) + I;
+      D := PAnsiChar(Result) + I;
       I := Size;
     end;
     if (S^ < 32) {or (S^ > $7F)} then
@@ -779,20 +790,20 @@ begin
           Dec(I, 2);
         end else
         begin
-          D^ := Char(S^);
+          D^ := AnsiChar(S^);
           Inc(D);
           Dec(I);
         end;
     Dec(Size);
     Inc(S);
   end;
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
-function InsertCR(const Value: String; BlockSize: Integer): String;
+function InsertCR(const Value: AnsiString; BlockSize: Integer): AnsiString;
 var
   I: Integer;
-  S,D: PChar;
+  S,D: PAnsiChar;
 begin
   if (BlockSize <= 0) or (Length(Value) <= BlockSize) then
   begin
@@ -801,8 +812,8 @@ begin
   end;
   I := Length(Value);
   SetLength(Result, I + I * 2 div BlockSize + 2);
-  S := PChar(Value);
-  D := PChar(Result);
+  S := PAnsiChar(Value);
+  D := PAnsiChar(Result);
   repeat
     Move(S^, D^, BlockSize);
     Inc(S, BlockSize);
@@ -813,18 +824,18 @@ begin
   until I < BlockSize;
   Move(S^, D^, I);
   Inc(D, I);
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
-function DeleteCR(const Value: String): String;
+function DeleteCR(const Value: AnsiString): AnsiString;
 var
-  S,D: PChar;
+  S,D: PAnsiChar;
   I: Integer;
 begin
   I := Length(Value);
   SetLength(Result, I);
-  D := PChar(Result);
-  S := PChar(Value);
+  D := PAnsiChar(Result);
+  S := PAnsiChar(Value);
   while I > 0 do
   begin
     if (S^ <> #10) and (S^ <> #13) then
@@ -835,13 +846,13 @@ begin
     Inc(S);
     Dec(I);
   end;
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
-function InsertBlocks(const Value, BlockStart, BlockEnd: String; BlockSize: Integer): String;
+function InsertBlocks(const Value, BlockStart, BlockEnd: AnsiString; BlockSize: Integer): AnsiString;
 var
   I,LS,LE: Integer;
-  D,S: PChar;
+  D,S: PAnsiChar;
 begin
   if (BlockSize <= 0) or (Length(Value) <= BlockSize) then
   begin
@@ -852,52 +863,51 @@ begin
   LS := Length(BlockStart);
   LE := Length(BlockEnd);
   SetLength(Result, I + (I div BlockSize + 1) * (LS + LE));
-  S := PChar(Value);
-  D := PChar(Result);
+  S := PAnsiChar(Value);
+  D := PAnsiChar(Result);
   repeat
-    Move(PChar(BlockStart)^, D^, LS); Inc(D, LS);
+    Move(PAnsiChar(BlockStart)^, D^, LS); Inc(D, LS);
     Move(S^, D^, BlockSize);          Inc(D, BlockSize);
-    Move(PChar(BlockEnd)^, D^, LE);   Inc(D, LE);
+    Move(PAnsiChar(BlockEnd)^, D^, LE);   Inc(D, LE);
     Dec(I, BlockSize);
     Inc(S, BlockSize);
   until I < BlockSize;
   if I > 0 then
   begin
-    Move(PChar(BlockStart)^, D^, LS); Inc(D, LS);
+    Move(PAnsiChar(BlockStart)^, D^, LS); Inc(D, LS);
     Move(S^, D^, I);                  Inc(D, I);
-    Move(PChar(BlockEnd)^, D^, LE);   Inc(D, LE);
+    Move(PAnsiChar(BlockEnd)^, D^, LE);   Inc(D, LE);
   end;
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
-function RemoveBlocks(const Value, BlockStart, BlockEnd: String): String;
+function RemoveBlocks(const Value, BlockStart, BlockEnd: AnsiString): AnsiString;
 var
   LS,LE: Integer;
-  S,D,L,K: PChar;
+  S,D,L,K: PAnsiChar;
 begin
   SetLength(Result, Length(Value));
   LS := Length(BlockStart);
   LE := Length(BlockEnd);
-  D := PChar(Result);
-  S := PChar(Value);
+  D := PAnsiChar(Result);
+  S := PAnsiChar(Value);
   L := S + Length(Value);
   repeat
     if S > L then Break;
     if LS > 0 then
     begin
-      S := StrPos(S, PChar(BlockStart));
+      S := StrPos(S, PAnsiChar(BlockStart));
       if S = nil then Break;
       Inc(S, LS);
       if S > L then Break;
     end;
-    K := StrPos(S, PChar(BlockEnd));
+    K := StrPos(S, PAnsiChar(BlockEnd));
     if K = nil then K := L;
     Move(S^, D^, K - S);
     Inc(D, K - S);
     S := K + LE;
   until S >= L;
-  SetLength(Result, D - PChar(Result));
+  SetLength(Result, D - PAnsiChar(Result));
 end;
 
 end.
-

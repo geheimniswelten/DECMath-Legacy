@@ -1,25 +1,33 @@
-{Copyright:      Hagen Reddmann  HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
- Remarks:        Public Domain, this Copyright must be included
- known Problems: none
- Version:        5.1, Delphi Encryption Compendium
-                 Delphi 2-7, BCB 3-4, designed and testet under D3-7
- Description:    CPU Detection, single Unit
- Remarks:
-   - codesizes       503 (CPUType)
-                    1003 (CPUType, CPUSpeed)
-                    5035 (CPUType, CPUSpeed, CPUVendor) bytes
-   - datasize (BSS)  142 bytes
-   - datasize (DATA) 100 bytes if CPUVendor is used
-       minimal       645 bytes in EXE 
-}
+{*****************************************************************************
+
+  Delphi Encryption Compendium (DEC)
+  Version 5.2 for Delphi 7 - 2009
+
+  Remarks:          Public Domain, Copyright must be included
+
+  Original Author:  (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
+
+  Description:      CPU Detection, single Unit
+
+  Remarks:
+  - codesizes       503 (CPUType)
+                   1003 (CPUType, CPUSpeed)
+                   5035 (CPUType, CPUSpeed, CPUVendor) bytes
+  - datasize (BSS)  142 bytes
+  - datasize (DATA) 100 bytes if CPUVendor is used
+    minimal         645 bytes in EXE
+
+*****************************************************************************}
 
 unit CPU;
 
 interface
 
 type
-{CPU Detection}
+  {CPU Detection}
   TCPUData = packed record
     Typ: Byte;
     Family: Byte;
@@ -32,8 +40,8 @@ type
     FeaturesEx_EDX: Cardinal;       // extended Features AMD/Cyrix
     FeaturesEx_EBX: Cardinal;
     FeaturesEx_ECX: Cardinal;
-    Vendor: array[0..12] of Char;   // inculdes trailing #0
-    VendorEx: array[0..64] of Char; //    "         "
+    Vendor: array[0..12] of AnsiChar;   // inculdes trailing #0
+    VendorEx: array[0..64] of AnsiChar; //    "         "
     CPUID3: array[0..4] of Cardinal;
     VendorID: Cardinal;
     TLB_EAX: Cardinal;              // Cache and TLB Infos, see Intel Docus
@@ -43,16 +51,16 @@ type
   end;
 
 const
-// CPU Family codes
+  // CPU Family codes
   cf386        = 3;
   cf486        = 4;
   cfPentium    = 5;
   cfPentiumPro = 6;
-// CPU Types
+  // CPU Types
   ctOEM        = 0;
   ctOverdrive  = 1;
   ctDual       = 2;
-// Vendor codes
+  // Vendor codes
   cvIntel      = $506E7F40; // CRC('GenuineIntel'); Intel
   cvAMD        = $454D5A47; // CRC('AuthenticAMD'); AMD
   cvCyrix      = $7E7D554F; // CRC('CyrixInstead'); Cyrix
@@ -62,7 +70,7 @@ const
   cvRise       = $65736952; // CRC('RiseRiseRise'); Rise Technology
   cvTransmeta  = $17337363; // CRC('GenuineTMx86'); Transmeta
 
-// CPU Features
+  // CPU Features
   ffFPU        = $00000001; // Floating Point Unit on Chip
   ffVME        = $00000002; // Virtual 8086 Mode Enhancements
   ffDE         = $00000004; // Debugging Extensions
@@ -73,7 +81,7 @@ const
   ffMCE        = $00000080; // Machine Check Exception
   ffCX8        = $00000100; // CMPXCHG Instruction supported
   ffAPIC       = $00000200; // Advanced Programmable Interrupt Controller
-// ffRes1               = $00000400;
+  // ffRes1       = $00000400;
   ffSEP        = $00000800; // Fast System Call, SYSENTER and SYSEXIT Instruction
   ffMTRR       = $00001000; // Memory Type Range Registers
   ffPGE        = $00002000; // Global Flag Processor supported
@@ -83,7 +91,7 @@ const
   ffPSE36      = $00020000; // PSE-36—36-bit Page Size Extension
   ffPN         = $00040000; // PN—Processor Number, supports the 96-bit PN feature
   ffCLFSH      = $00080000; // CLFLUSH intsturction supported
-// ffRes2               = $00100000;
+  // ffRes2       = $00100000;
   ffDS         = $00200000; // Debug Store supported
   ffACPI       = $00400000; // Thermal Monitor and Software Controlled Clock Features
   ffMMX        = $00800000; // MMX instruction set
@@ -94,7 +102,7 @@ const
   ffHTT        = $10000000; // Hyper-Threading Technology 
   ffTM         = $20000000; // Thermal control circuit TCC supported
   ffIA64       = $40000000; // IA-64 architecture
-// ffRes5               = $80000000;
+  // ffRes5       = $80000000;
                
 function CPUType: Integer; {any cfXXXX Value}
 function CPUData: TCPUData;
@@ -403,6 +411,8 @@ begin
 end;
 
 function CPUVendor: String;
+var
+  Compatible: Boolean;
 
   function L2Cache: Cardinal;
   begin // find L2 Cache definition
@@ -413,18 +423,16 @@ function CPUVendor: String;
 
 label
   Unknown, Skip;
-var
-  Compatible: Boolean;
 begin
   Compatible := False;
   with FCPU do
   begin
     case VendorID of
- // Intel ----------------------------
+      // Intel ----------------------------
       cvIntel:
         begin
           Result := 'Intel ';
-// use goto's, yes, not realy good coding style, but I want a compact solution
+          // use goto's, yes, not realy good coding style, but I want a compact solution
           goto Skip;
 Unknown:
           Compatible := True;
@@ -433,10 +441,10 @@ Skip:
             cf386: Result := Result + '386';
             cf486:
               case Model of
-// on the way a small remark:
-// we use here concacted stringconstant,
-// compiler save optimated only once on different version into code,
-// and so we reduce the codesize.
+              // on the way a small remark:
+              // we use here concacted stringconstant,
+              // compiler save optimated only once on different version into code,
+              // and so we reduce the codesize.
                 0: Result := Result + '486' + 'DX' + '25/30';
                 1: Result := Result + '486' + 'DX' + '50';
                 2: Result := Result + '486' + 'SX';
@@ -479,7 +487,7 @@ Skip:
                      case Features_EBX and $FF of
                        1: Result := Result + ' Celeron';
                        3: Result := Result + ' III' + ' Xenon';
-                       8: Result := Result + ' IV'; // ? I don't known realy
+                       8: Result := Result + ' IV'; // ? not really sure about
                      else
                        begin
                          Result := Result + ' III';
@@ -497,7 +505,7 @@ Skip:
             Result := Format(sCPU_Unknown, [Vendor, Family, Model]);;
           end;
         end;
-// AMD ----------------------------
+      // AMD ----------------------------
       cvAMD:
         begin
           Result := 'AMD ';
@@ -535,7 +543,7 @@ Skip:
             goto Unknown;
           end;
         end;
-// Cyrix ----------------------------
+      // Cyrix ----------------------------
       cvCyrix:
         begin
           Result := 'Cyrix ';
@@ -565,7 +573,7 @@ Skip:
             goto Unknown;
           end;
         end;
-// UMC ----------------------------
+      // UMC ----------------------------
       cvUMC:
         begin
           Result := 'UMC ';
@@ -578,14 +586,14 @@ Skip:
             end
           else goto Unknown;
         end;
-// NexGen ----------------------------
+      // NexGen ----------------------------
       cvNexGen:
         begin
           Result := 'NexGen ';
           if (Family = cfPentium) and (Model = 0) then Result := Result + '586'
             else goto Unknown;
         end;
-// Centaur/IDT ----------------------------
+      // Centaur/IDT ----------------------------
       cvCentaur:
         begin
           Result := 'Centaur/IDT ';
@@ -599,7 +607,7 @@ Skip:
             end
           else goto Unknown;
         end;
-// Rise Technology ----------------------------
+      // Rise Technology ----------------------------
       cvRise:
         begin
           Result := 'Rise Technology ';
@@ -624,11 +632,11 @@ Skip:
     if Compatible then
       Result := Result + sCPU_Compatible;
     if VendorEx[0] <> #0 then
-      Result := Result + ' "' + Trim(StrPas(VendorEx)) + '"';
+      Result := Result + ' "' + Trim(StrPas(PChar(String(VendorEx)))) + '"';
   end;
 end;
 
-
 initialization
   GetCPU;
+  
 end.

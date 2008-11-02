@@ -1,9 +1,14 @@
-{Copyright:      Hagen Reddmann HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
- Remarks:        freeware, but this Copyright must be included
- known Problems: none
- Version:        5.1,  Part I from Delphi Encryption Compendium  ( DEC Part I)
-                 Delphi 5
+{*****************************************************************************
+
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Author:  (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -16,9 +21,12 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-}
+
+*****************************************************************************}
 
 unit DECCipher;
+
+{$RANGECHECKS OFF}
 
 interface
 
@@ -501,13 +509,13 @@ implementation
 uses TypInfo, DECData;
 
 resourcestring
-  sAlreadyPadded        = 'Cipher have already padded, can not process message';
+  sAlreadyPadded        = 'Cipher has already been padded, cannot process message';
   sInvalidState         = 'Cipher is not in valid state for this action';
-  sInvalidMessageLength = 'Messagelength for %s must be a multiple of %d bytes';
-  sKeyMaterialToLarge   = 'Keymaterial is to large as can be used, security issue';
-  sIVMaterialToLarge    = 'Initvector is to large as can be used, security issue';
+  sInvalidMessageLength = 'Message length for %s must be a multiple of %d bytes';
+  sKeyMaterialToLarge   = 'Keymaterial is too large for use (Security Issue)';
+  sIVMaterialToLarge    = 'Initvector is too large for use (Security Issue)';
   sInvalidMACMode       = 'Invalid Cipher mode to compute MAC';
-  sCipherNoDefault      = 'No default cipher are registered';
+  sCipherNoDefault      = 'No default cipher has been registered';
 
 var
   FDefaultCipherClass: TDECCipherClass = nil;
@@ -1344,7 +1352,7 @@ var
 begin
   K := @Key;
   S := FUser;
-  P := Pointer(PChar(FUser) + SizeOf(Blowfish_Data));
+  P := Pointer(PAnsiChar(FUser) + SizeOf(Blowfish_Data));
   Move(Blowfish_Data, S^, SizeOf(Blowfish_Data));
   Move(Blowfish_Key, P^, Sizeof(Blowfish_Key));
   J := 0;
@@ -1429,7 +1437,7 @@ begin
   Assert(Size = Context.BlockSize);
 
   D := FUser;
-  P := Pointer(PChar(FUser) + SizeOf(Blowfish_Data));
+  P := Pointer(PAnsiChar(FUser) + SizeOf(Blowfish_Data));
   A := SwapLong(PLongArray(Source)[0]) xor P[0]; P := @P[1];
   B := SwapLong(PLongArray(Source)[1]);
   for I := 0 to 7 do
@@ -1503,7 +1511,7 @@ begin
   Assert(Size = Context.BlockSize);
 
   D := FUser;
-  P := Pointer(PChar(FUser) + SizeOf(Blowfish_Data) + SizeOf(Blowfish_Key) - SizeOf(Integer));
+  P := Pointer(PAnsiChar(FUser) + SizeOf(Blowfish_Data) + SizeOf(Blowfish_Key) - SizeOf(Integer));
   A := SwapLong(PLongArray(Source)[0]) xor P[0];
   B := SwapLong(PLongArray(Source)[1]);
   for I := 0 to 7 do
@@ -2976,7 +2984,7 @@ procedure TCipher_Rijndael.DoInit(const Key; Size: Integer);
     I: Integer;
     D: PLongWord;
   begin
-    D := Pointer(PChar(FUser) + FUserSize shr 1);
+    D := Pointer(PAnsiChar(FUser) + FUserSize shr 1);
     Move(FUser^, D^, FUserSize shr 1);
     Inc(D, 4);
     for I := 0 to FRounds * 4 - 5 do
@@ -3064,7 +3072,7 @@ procedure TCipher_Rijndael.DoInit(const Key; Size: Integer);
     P: PLongWord;
     I: Integer;
   begin
-    P := Pointer(PChar(FUser) + FUserSize shr 1);
+    P := Pointer(PAnsiChar(FUser) + FUserSize shr 1);
     Move(FUser^, P^, FUserSize shr 1);
     Inc(P, 4);
     for I := 0 to FRounds * 4 -5 do
@@ -3160,7 +3168,7 @@ var
 begin
   Assert(Size = Context.BlockSize);
 
-  P  := Pointer(PChar(FUser) + FUserSize shr 1 + FRounds * 16);
+  P  := Pointer(PAnsiChar(FUser) + FUserSize shr 1 + FRounds * 16);
   A1 := PLongArray(Source)[0];
   B1 := PLongArray(Source)[1];
   C1 := PLongArray(Source)[2];
@@ -3461,7 +3469,7 @@ var
 begin
   FillChar(Init_State, SizeOf(Init_State), 0);
   FillChar(T, SizeOf(T), 0);
-  P := Pointer(PChar(FUser) + 12);
+  P := Pointer(PAnsiChar(FUser) + 12);
   ExpandKey;
   for I := 0 to 7 do GP8(@T);
   for I := 0 to 11 do
@@ -5755,13 +5763,13 @@ end;
 procedure TCipher_Skipjack.DoEncode(Source, Dest: Pointer; Size: Integer);
 var
   Tab,Min: PSkipjackTab;
-  Max: PChar;
+  Max: PAnsiChar;
   K,T,A,B,C,D: LongWord;
 begin
   Assert(Size = Context.BufferSize);
 
   Min := FUser;
-  Max := PChar(Min) + 9 * 256;
+  Max := PAnsiChar(Min) + 9 * 256;
   Tab := Min;
   A   := Swap(PWordArray(Source)[0]);
   B   := Swap(PWordArray(Source)[1]);
@@ -5825,7 +5833,7 @@ end;
 procedure TCipher_Skipjack.DoDecode(Source, Dest: Pointer; Size: Integer);
 var
   Tab,Max: PSkipjackTab;
-  Min: PChar;
+  Min: PAnsiChar;
   K,T,A,B,C,D: LongWord;
 begin
   Assert(Size = Context.BufferSize);
@@ -6012,6 +6020,4 @@ begin
   PLongArray(Dest)[1] := Y;
 end;
 
-
 end.
-

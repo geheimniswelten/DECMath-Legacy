@@ -125,7 +125,7 @@ end;
 procedure TestCases;
 // process testcases in file DECTest.vec
 var
-  CurChar: PChar;
+  CurChar: PAnsiChar;
   LineNo: Integer;
   Instance: TObject;
   ClassType: TDECClass;
@@ -139,7 +139,7 @@ var
     raise Exception.CreateFmt('Invalid line format at %d', [LineNo]);
   end;
 
-  function ExtractClassName: PChar;
+  function ExtractClassName: PAnsiChar;
   begin
     while CurChar^ in [' ', '['] do Inc(CurChar);
     Result := CurChar;
@@ -152,7 +152,7 @@ var
   // setup property stored in Testvectors
   // format is .PropName=PropValue
   var
-    PropName: PChar;
+    PropName: PAnsiChar;
   begin
     while CurChar^ in [' ', '.'] do Inc(CurChar);
     PropName := CurChar;
@@ -181,7 +181,7 @@ var
               Exit;
             end;
       try
-        SetPropValue(Instance, PropName, String(CurChar));
+        SetPropValue(Instance, PropName, AnsiString(CurChar));
       except
         on E: Exception do
         begin
@@ -196,7 +196,7 @@ var
   // extract valid test result, and convertion from Escaped string
   // repositionate to testcases
   var
-    R,P: PChar;
+    R,P: PAnsiChar;
   begin
     while CurChar^ in [' ', '<'] do Inc(CurChar);
     R := CurChar;
@@ -328,7 +328,7 @@ var
 
 var
   VectorFile: Text;
-  Line: String;
+  Line: AnsiString;
   TestProc: procedure;
 begin
   WriteLn('processing test cases');
@@ -344,7 +344,7 @@ begin
     while not EOF(VectorFile) do
     begin
       ReadLn(VectorFile, Line);
-      CurChar := PChar(Line);
+      CurChar := PAnsiChar(Line);
       while (CurChar^ <> #0) and (CurChar^ = ' ') do Inc(CurChar);
       Inc(LineNo);
       case CurChar^ of
@@ -452,7 +452,7 @@ begin
   WriteLn;
 end;
 
-function TestVector: PChar; assembler; register;
+function TestVector: PAnsiChar; assembler; register;
 asm
          MOV   EAX,OFFSET @Vector
          RET

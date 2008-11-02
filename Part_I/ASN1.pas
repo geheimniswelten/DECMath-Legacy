@@ -1,10 +1,16 @@
-{Copyright:      Hagen Reddmann  HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
- Remarks:        Shareware, this Copyright must be included
- known Problems: none
- Version:        5.1, Delphi Encryption Compendium
-                 Delphi 2-6, BCB 3-4, designed and testet under D3-6
- Description:    ASN.1 protocoll base routines
+{*****************************************************************************
+
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Author:  (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
+
+  Description:      ASN.1 protocoll base routines
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -17,9 +23,12 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- }
-{$I VER.INC}
+
+*****************************************************************************}
+
 unit ASN1;
+
+{$I VER.INC}
 
 interface
 
@@ -28,29 +37,34 @@ uses Classes, SysUtils;
 type
   EASN1 = class(Exception);
 
-procedure ASN1_ChangeEndian(var Buffer; Size: LongInt);
+procedure ASN1_ChangeEndian(var Buffer; Size: Int64);
 function  ASN1_SwapEndian(Value: Integer): Integer; overload;
 function  ASN1_SwapEndian(Value: Cardinal): Cardinal; overload;
 function  ASN1_SwapEndian(Value: Word): Word; overload;
-function  ASN1_CalcLen(var Len: LongInt): Byte;
-function  ASN1_WriteLen(Stream: TStream; Len: LongInt): LongInt;
-function  ASN1_ReadLen(Stream: TStream): LongInt;
-function  ASN1_WriteStr(Stream: TStream; const Value: String): LongInt;
+function  ASN1_CalcLen(var Len: Int64): Byte;
+function  ASN1_WriteLen(Stream: TStream; Len: Int64): Int64;
+function  ASN1_ReadLen(Stream: TStream): Int64;
+function  ASN1_WriteStr(Stream: TStream; const Value: String): Int64;
 function  ASN1_ReadStr(Stream: TStream): String;
-function  ASN1_WriteWStr(Stream: TStream; const Value: WideString): LongInt;
+function  ASN1_WriteWStr(Stream: TStream; const Value: WideString): Int64;
 function  ASN1_ReadWStr(Stream: TStream): WideString;
-function  ASN1_WriteBuf(Stream: TStream; const Buffer; Size: LongInt): LongInt;
-function  ASN1_ReadBuf(Stream: TStream; var Buffer; Size: LongInt): LongInt;
+function  ASN1_WriteBuf(Stream: TStream; const Buffer; Size: Int64): Int64;
+function  ASN1_ReadBuf(Stream: TStream; var Buffer; Size: Int64): Int64;
 
 var
   ASN1_Integer: Byte = $02;  // Tag for asn1 integer
 
 implementation
 
-// only <= 4 Bytes asn1 Length are supported
-// we follow Borland Style and use LongInt for compatibility to TStream
+resourcestring
+  sASN1LenCoding  = 'Invalid ASN1 Length encoded Tag detected.';
+  sASN1Writing    = 'ASN1 stream write error';
+  sASN1Reading    = 'ASN1 stream read error';
 
-procedure ASN1_ChangeEndian(var Buffer; Size: Integer); assembler; register;
+// only <= 4 Bytes asn1 Length are supported
+// we follow Borland Style and use Int64 for compatibility to TStream
+
+procedure ASN1_ChangeEndian(var Buffer; Size: Int64); assembler; register;
 // not fast, but easy
 asm
        CMP    EDX,1
@@ -88,8 +102,6 @@ asm
 end;
 
 procedure ASN1_Raise(Msg: PResStringRec);
-resourcestring
-  sASN1LenCoding = 'Invalid ASN1 Length encoded Tag detected.';
 var
   ErrorAddr: Pointer;
 begin
@@ -102,27 +114,21 @@ begin
 end;
 
 procedure ASN1_RaiseLen;
-resourcestring
-  sASN1LenCoding = 'Invalid ASN1 Length encoded Tag detected';
 begin
   ASN1_Raise(@sASN1LenCoding);
 end;
 
 procedure ASN1_RaiseWrite;
-resourcestring
-  sASN1Writing = 'ASN1 stream write error';
 begin
   ASN1_Raise(@sASN1Writing);
 end;
 
 procedure ASN1_RaiseRead;
-resourcestring
-  sASN1Reading = 'ASN1 stream read error';
 begin
   ASN1_Raise(@sASN1Reading);
 end;
 
-function ASN1_CalcLen(var Len: LongInt): Byte;
+function ASN1_CalcLen(var Len: Int64): Byte;
 begin
   if Len < 0 then ASN1_RaiseLen;
   if Len > $7F then
@@ -136,7 +142,7 @@ begin
   end else Result := Len;
 end;
 
-function ASN1_WriteLen(Stream: TStream; Len: LongInt): LongInt;
+function ASN1_WriteLen(Stream: TStream; Len: Int64): Int64;
 var
   B: Byte;
 begin
@@ -150,7 +156,7 @@ begin
   end else Result := SizeOf(B);
 end;
 
-function ASN1_ReadLen(Stream: TStream): LongInt;
+function ASN1_ReadLen(Stream: TStream): Int64;
 var
   B: Byte;
 begin
@@ -169,49 +175,49 @@ begin
   end else Result := B;
 end;
 
-function ASN1_WriteStr(Stream: TStream; const Value: String): LongInt;
+function ASN1_WriteStr(Stream: TStream; const Value: String): Int64;
 var
-  I: LongInt;
+  I: Int64;
 begin
-  I := Length(Value);
+  I := Length(Value) * SizeOf(Char);
   Result := ASN1_WriteLen(Stream, I) + I;
   if Stream.Write(PChar(Value)^, I) <> I then ASN1_RaiseWrite;
 end;
 
 function ASN1_ReadStr(Stream: TStream): String;
 var
-  I: LongInt;
+  I: Int64;
 begin
   I := ASN1_ReadLen(Stream);
-  SetLength(Result, I);
+  SetLength(Result, I div SizeOf(Char));
   if Stream.Read(PChar(Result)^, I) <> I then ASN1_RaiseRead;
 end;
 
-function ASN1_WriteWStr(Stream: TStream; const Value: WideString): LongInt;
+function ASN1_WriteWStr(Stream: TStream; const Value: WideString): Int64;
 var
-  I: LongInt;
+  I: Int64;
 begin
-  I := Length(Value) * 2;
+  I := Length(Value) * SizeOf(WideChar);
   Result := ASN1_WriteLen(Stream, I) + I;
-  if Stream.Write(Pointer(Value)^, I) <> I then ASN1_RaiseWrite;
+  if Stream.Write(PWideChar(Value)^, I) <> I then ASN1_RaiseWrite;
 end;
 
 function ASN1_ReadWStr(Stream: TStream): WideString;
 var
-  I: LongInt;
+  I: Int64;
 begin
   I := ASN1_ReadLen(Stream);
-  SetLength(Result, I);
-  if Stream.Read(Pointer(Result)^, I) <> I then ASN1_RaiseRead;
+  SetLength(Result, I div SizeOf(WideChar));
+  if Stream.Read(PWideChar(Result)^, I) <> I then ASN1_RaiseRead;
 end;
 
-function ASN1_WriteBuf(Stream: TStream; const Buffer; Size: LongInt): LongInt;
+function ASN1_WriteBuf(Stream: TStream; const Buffer; Size: Int64): Int64;
 begin
   Result := ASN1_WriteLen(Stream, Size) + Size;
   if Stream.Write(Buffer, Size) <> Size then ASN1_RaiseWrite;
 end;
 
-function ASN1_ReadBuf(Stream: TStream; var Buffer; Size: LongInt): LongInt;
+function ASN1_ReadBuf(Stream: TStream; var Buffer; Size: Int64): Int64;
 begin
   Result := ASN1_ReadLen(Stream);
   if Result > Size then ASN1_RaiseRead;

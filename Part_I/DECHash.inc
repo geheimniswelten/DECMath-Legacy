@@ -1,9 +1,14 @@
-{Copyright:      Hagen Reddmann  HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
- Remarks:        freeware, but this Copyright must be included
- known Problems: none
- Version:        5.1,  Part I from Delphi Encryption Compendium  ( DEC Part I)
-                 Delphi 5
+{*****************************************************************************
+
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Author:  (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -17,7 +22,7 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-}
+*****************************************************************************}
 
 {$IFDEF THash_MD2_asm}
 procedure THash_MD2.DoTransform(Buffer: PLongArray);

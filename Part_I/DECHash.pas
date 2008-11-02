@@ -1,9 +1,14 @@
-{Copyright:      Hagen Reddmann  HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
- Remarks:        freeware, but this Copyright must be included
- known Problems: none
- Version:        5.1,  Part I from Delphi Encryption Compendium  ( DEC Part I)
-                 Delphi 5
+{*****************************************************************************
+
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Author:  (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -17,9 +22,12 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-}
+*****************************************************************************}
 
 unit DECHash;
+
+{$WARNINGS OFF}
+{$RANGECHECKS OFF}
 
 interface
 
@@ -38,16 +46,16 @@ type
   THash_RipeMD320       = class;  {$DEFINE THash_RipeMD320_asm}
   THash_SHA             = class;  {$DEFINE THash_SHA_asm}
   THash_SHA1            = class;
-  THash_SHA256          = class;  {.$DEFINE THash_SHA256_asm}
+  THash_SHA256          = class;  {$DEFINE THash_SHA256_asm}
   THash_SHA384          = class;  {$DEFINE THash_SHA384_asm}
   THash_SHA512          = class;
   THash_Haval128        = class;  {$DEFINE THashBaseHaval_asm}
-  THash_Haval160        = class;
-  THash_Haval192        = class;
-  THash_Haval224        = class;
-  THash_Haval256        = class;
+  THash_Haval160        = class;  // Haval 160, 3 Rounds
+  THash_Haval192        = class;  // Haval 192, 4 Rounds
+  THash_Haval224        = class;  // Haval 224, 4 Rounds
+  THash_Haval256        = class;  // Haval 256, 5 Rounds
   THash_Tiger           = class;  {$DEFINE THash_Tiger_asm}
-  THash_Panama          = class;  {.$DEFINE THash_Panama_asm}
+  THash_Panama          = class;  {$DEFINE THash_Panama_asm}
   THash_Whirlpool       = class;  {$DEFINE THashBaseWhirlpool_asm}
   THash_Whirlpool1      = class;
   THash_Square          = class;  {$DEFINE THash_Square_asm}
@@ -695,7 +703,7 @@ begin
       for J := 0 to DigestSize -1 do
         R := R xor Digest[J];
 
-      Result[I +1] := Char(R);
+      Result[I +1] := AnsiChar(R);
     end;
   finally
     Free;
@@ -3504,5 +3512,3 @@ end;
 {$ENDIF}
 
 end.
-
-

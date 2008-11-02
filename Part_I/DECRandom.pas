@@ -1,10 +1,16 @@
-{Copyright:      Hagen Reddmann HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
- Remarks:        freeware, but this Copyright must be included
- known Problems: none
- Version:        5.1, Delphi Encryption Compendium
-                 Delphi 2-4, BCB 3-4, designed and testet under D3-5
- Description:    secure protected Random Number Generator based on Yarrow
+{*****************************************************************************
+
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Author:  (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
+
+  Description:      Secure protected Random Number Generator based on Yarrow
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -17,7 +23,8 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-}
+
+*****************************************************************************}
 
 unit DECRandom;
 
@@ -35,7 +42,8 @@ var
 
 function DoProcess: Byte;
 begin
-  if not IsObject(FHash, RandomClass) then FHash := RandomClass.Create;
+  if not IsObject(FHash, RandomClass) then
+    FHash := RandomClass.Create;
   FHash.Init;
   FHash.Calc(FCounter, SizeOf(FCounter));
   FHash.Calc(FRegister, SizeOf(FRegister));
@@ -60,17 +68,17 @@ var
 begin
   if Size >= 0 then              
   begin
-// initalize a repeatable Seed  
+    // initalize a repeatable Seed  
     FillChar(FRegister, SizeOf(FRegister), 0);
     FCounter := 0;
     for I := 0 to Size -1 do
       FRegister[I mod SizeOf(FRegister)] := FRegister[I mod SizeOf(FRegister)] xor TByteArray(Buffer)[I];
   end else
   begin
-// initalize a non-repeatable Seed based on Timers,
-// ATTENTION! this way isn't secure inpredictable,
-// the user should call RandomSeed(Data, SizeOf(Data)) instead,
-// where Date contains as example collected informations based on Human inputs.
+    // initalize a non-repeatable Seed based on Timers,
+    // ATTENTION! this way isn't secure inpredictable,
+    // the user should call RandomSeed(Data, SizeOf(Data)) instead,
+    // where Date contains as example collected informations based on Human inputs.
     T := RandomSystemTime;
     for I := Low(FRegister) to High(FRegister) do
     begin
@@ -103,6 +111,8 @@ end;
 
 initialization
   DoInit;
+
 finalization
   DoDone;
+
 end.

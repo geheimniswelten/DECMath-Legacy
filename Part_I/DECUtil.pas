@@ -1,10 +1,16 @@
-{Copyright:      Hagen Reddmann  HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
- Remarks:        freeware, but this Copyright must be included
- known Problems: none
- Version:        5.1, Delphi Encryption Compendium
-                 Delphi 2-4, BCB 3-4, designed and testet under D3-5
- Description:    Utilitys for the DEC Packages
+{*****************************************************************************
+
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Author:  (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
+
+  Description:      Utilities for the DEC
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -17,9 +23,11 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-}
+
+*****************************************************************************}
 
 unit DECUtil;
+
 {$I VER.INC}
 
 interface
@@ -27,7 +35,10 @@ interface
 uses Windows, SysUtils, Classes, CRC;
 
 type
-  Binary         = String;  // LongString with Binary Contens
+{$IFNDEF UNICODE}
+  RawByteString  = AnsiString;
+{$ENDIF}
+  Binary         = RawByteString; // LongString with Binary Content
 {$IFNDEF VER_D4H}
   LongWord       = type Integer;
 {$ENDIF}
@@ -38,11 +49,11 @@ type
   PLongArray     = ^TLongArray;
   TLongArray     = array[0..1023] of LongWord;
 
-// basicaly DEC Exceptionclass ALL-exception in DEC-Classes/methods should be use this or descends
+  // DEC exception class which all DEC-Classes/methods should use
   EDECException  = class(Exception);
 
-// basicaly Class for all DEC classes that needed a RefCounter and
-// Registration Support
+  // basic class for all DEC classes that needed a RefCounter and have
+  // registration support
   TDECClass = class of TDECObject;
 
   TDECObject = class(TPersistent)
@@ -58,53 +69,63 @@ type
     procedure Process(const Min,Max,Pos: Int64); stdcall;
   end;
 
-// DEC Classes Registration
+// DEC classes Registration
 type
   TDECEnumClassesCallback = function(UserData: Pointer; ClassType: TClass): Boolean; register;
 
-// Register DEC Classes to make it streamable
+// Register DEC classes to make it streamable
 procedure RegisterDECClasses(const Classes: array of TClass);
-// Unregister DEC Classes
+
+// Unregister DEC classes
 procedure UnregisterDECClasses(const Classes: array of TClass);
-// fillout a StringList with registered DEC Classes
+
+// fill a StringList with registered DEC classes
 procedure DECClasses(List: TStrings; Include: TClass = nil; Exclude: TClass = nil);
-// find a registered DEC Class by Identity
+
+// find a registered DEC class by Identity
 function DECClassByIdentity(Identity: LongWord; ClassType: TClass): TDECClass;
-// find DEC Class by Name, can be as Example: TCipher_Blowfish, Blowfish or registered Name override
-function  DECClassByName(const Name: String; ClassType: TClass): TDECClass;
-// returns correted short Classname of any registered DEC Class
-function  DECClassName(ClassType: TClass): String;
+
+// find DEC class by Name, can be as Example: TCipher_Blowfish, Blowfish or registered Name override
+function DECClassByName(const Name: String; ClassType: TClass): TDECClass;
+
+// returns corrected short Classname of any registered DEC Class
+function DECClassName(ClassType: TClass): String;
+
 // enumerate by callback over registered DEC classes
-function  DECEnumClasses(Callback: TDECEnumClassesCallback; UserData: Pointer; Include: TClass = nil; Exclude: TClass = nil): TDECClass;
+function DECEnumClasses(Callback: TDECEnumClassesCallback; UserData: Pointer; Include: TClass = nil; Exclude: TClass = nil): TDECClass;
 
 procedure ProtectBuffer(var Buffer; Size: Integer);
 procedure ProtectBinary(var Value: Binary);
 procedure ProtectStream(Stream: TStream; Size: Integer = 0);
-// test iff Buffer contains BufferSize values
-function  IsFilledWith(var Buffer; Size: Integer; Value: Char): Boolean;
+
+// test if Buffer contains BufferSize values
+function IsFilledWith(var Buffer; Size: Integer; Value: Char): Boolean;
 procedure FoldBuf(var Dest; DestSize: Integer; const Source; SourceSize: Integer);
 procedure FoldStr(var Dest; DestSize: Integer; const Source: String);
-// Random Buffer/Binary, ATENTION! standard Random Function are'nt crytographicaly secure,
-// please include DECRandom to install secure PRNG
-function  RandomBinary(Size: Integer): Binary;
+
+// Random Buffer/Binary, ATTENTION! standard Random Function aren't
+// crytographicaly secure, please include DECRandom to install secure PRNG
+function RandomBinary(Size: Integer): Binary;
 procedure RandomBuffer(var Buffer; Size: Integer);
-function  RandomLong: LongWord;
+function RandomLong: LongWord;
 procedure RandomSeed(const Buffer; Size: Integer); overload;
 procedure RandomSeed; overload;
-function  RandomSystemTime: Cardinal;
+function RandomSystemTime: Cardinal;
+
 // reverse Byte order from Buffer
 procedure SwapBytes(var Buffer; BufferSize: Integer);
-function  SwapLong(Value: LongWord): LongWord;
+function SwapLong(Value: LongWord): LongWord;
 procedure SwapLongBuffer(const Source; var Dest; Count: Integer);
-function  SwapInt64(const Value: Int64): Int64;
+function SwapInt64(const Value: Int64): Int64;
 procedure SwapInt64Buffer(const Source; var Dest; Count: Integer);
-function  SwapBits(Value, Bits: LongWord): LongWord;
+function SwapBits(Value, Bits: LongWord): LongWord;
 procedure XORBuffers(const Source1, Source2; Size: Integer; var Dest);
-// saver Test iff AObject valid
+
+// saver test if AObject is valid
 function IsObject(AObject: Pointer; AClass: TClass): Boolean;
 
 var
-  IdentityBase : LongWord = $25844852; // used as base in classmethod Identity
+  IdentityBase : LongWord = $25844852; // used as base in class method Identity
 
   DoRandomBuffer: procedure(var Buffer; Size: Integer); register = nil;
   DoRandomSeed: procedure(const Buffer; Size: Integer); register = nil;
@@ -112,8 +133,8 @@ var
 implementation
 
 resourcestring
-  sClassNotRegistered = 'Class %s not registered';
-  sWrongIdentity      = 'Another class "%s" with same identity as "%s" are allready registered.';
+  sClassNotRegistered = 'Class %s is not registered';
+  sWrongIdentity      = 'Another class "%s" with the same identity as "%s" has already been registered.';
   
 var
   FClasses: TList = nil;
@@ -184,12 +205,12 @@ function DECClassByName(const Name: String; ClassType: TClass): TDECClass;
 
   function DoFindShort(const Name: String; ClassType: TClass): Boolean;
   begin
-    Result := AnsiCompareText(DECClassName(ClassType), Name) = 0;
+    Result := CompareText(DECClassName(ClassType), Name) = 0;
   end;
 
   function DoFindLong(const Name: String; ClassType: TClass): Boolean;
   begin
-    Result := AnsiCompareText(ClassType.ClassName, Name) = 0;
+    Result := CompareText(ClassType.ClassName, Name) = 0;
   end;
 
 begin
@@ -235,8 +256,8 @@ class function TDECObject.Identity: LongWord;
 var
   Signature: String;
 begin
-  Signature := StringOfChar(#$5A, 256 - Length(Classname)) + AnsiUpperCase(ClassName);
-  Result := CRC32(IdentityBase, Signature[1], Length(Signature));
+  Signature := StringOfChar(#$5A, 256 - Length(Classname)) + UpperCase(ClassName);
+  Result := CRC32(IdentityBase, Signature[1], Length(Signature) * SizeOf(Signature[1]));
 end;
 
 class procedure TDECObject.Register;
@@ -278,12 +299,11 @@ asm
       POP     EBX
 end;
 
-
 function IsObject(AObject: Pointer; AClass: TClass): Boolean;
-// Relacement of "is" Operator for safer access/check iff AObject is AClass
+// Relacement of "is" Operator for safer access/check if AObject is AClass
 
   function IsClass(AObject: Pointer; AClass: TClass): Boolean;
-  asm  // safer replacement for Borland's "is" operator
+  asm  // safer replacement for Delphi's "is" operator
   @@1:    TEST    EAX,EAX
           JE      @@3
           MOV     EAX,[EAX]
@@ -307,7 +327,7 @@ begin
 end;
 
 function MemCompare(P1, P2: Pointer; Size: Integer): Integer;
-asm //equal to StrLComp(P1, P2, Size), but allways Size Bytes are checked
+asm //equal to StrLComp(P1, P2, Size), but always Size Bytes are checked
        PUSH    ESI
        PUSH    EDI
        MOV     ESI,P1
@@ -371,7 +391,7 @@ end;
 
 procedure ProtectBinary(var Value: Binary);
 begin
-  UniqueString(String(Value));
+  UniqueString(AnsiString(Value));
   ProtectBuffer(Pointer(Value)^, Length(Value));
   Value := '';
 end;
@@ -415,7 +435,7 @@ begin
 end;
 
 function IsFilledWith(var Buffer; Size: Integer; Value: Char): Boolean;
-asm // check iff Buffer is filled Size of bytes with Value
+asm // check if Buffer is filled with Size of bytes with Value
        TEST   EAX,EAX
        JZ     @@1
        PUSH   EDI
@@ -457,13 +477,13 @@ procedure FoldStr(var Dest; DestSize: Integer; const Source: String);
 begin
   FoldBuf(Dest, DestSize, PChar(Source)^, Length(Source));
 end;
-// random
 
+// random
 var
   FRndSeed: Cardinal = 0;
 
 function DoRndBuffer(Seed: Cardinal; var Buffer; Size: Integer): Cardinal;
-// nothing others as Borlands Random
+// same as Borlands Random
 asm
       AND     EDX,EDX
       JZ      @@2
@@ -483,7 +503,7 @@ asm
 end;
 
 function RandomSystemTime: Cardinal;
-// create Seed from Systemtime and performancecounter
+// create Seed from Systemtime and PerformanceCounter
 var
   SysTime: record
              Year: Word;
@@ -755,8 +775,5 @@ finalization
 {$IFDEF VER_D3H}
   RemoveModuleUnloadProc(ModuleUnload);
 {$ENDIF}
-  FClasses.Free;
-  FClasses := nil;
+  FreeAndNil(FClasses);
 end.
-
-

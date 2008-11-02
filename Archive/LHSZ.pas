@@ -1,20 +1,31 @@
-{Copyright:      Hagen Reddmann HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
-                 public domain, this Copyright must be included unchanged
- known Problems: none
- Version:        5.1,  Part I from Delphi Encryption Compendium  ( DEC Part I)
-                 Delphi 5
- Description:    very small and effizient LHSS compression
-                 with RC4 like encryption and 32 Bit Checksum
- Remarks:        LHEncodeBuffer() and LHDecodeBuffer() parameter out Data: Pointer
-                 MUST be released with FreeMem(Data) by the caller !
-                 The interface here works only on one linear chunk of input and
-                 process this in one single step. But processing of sequential
-                 chunks are possible with LHDeflate() and LHInflate(). Look into
-                 LHEncode() and LHDecode() to see some right initialization.
-                 Without Encryption the minimal compressable input should be > 10 Bytes.
-                 With Encryption the minimal compressable input should be > 13 Bytes.
-                 Below these limits the output is larger as the input.
+{*****************************************************************************
+
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Authors: Heiko Behrens (Initiator and Developer), Hagen Reddmann
+                    (c) 2006 Heiko Behrens and
+                    Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
+
+  Description:      very small and efficient LHSS compression
+                    with RC4 like encryption and 32 Bit Checksum
+
+  Remarks:          LHEncodeBuffer() and LHDecodeBuffer() parameter out Data:
+                    Pointer MUST be released with FreeMem(Data) by the caller!
+                    The interface here works only on one linear chunk of input
+                    and process this in one single step. But processing of
+                    sequential chunks are possible with LHDeflate() and
+                    LHInflate(). Look into LHEncode() and LHDecode() to see
+                    some right initialization.
+                    Without Encryption the minimal compressable input should
+                    be > 10 Bytes. With Encryption the minimal compressable
+                    input should be > 13 Bytes. Below these limits the output
+                    is larger as the input.
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -27,20 +38,23 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-}
+
+*****************************************************************************}
+
 unit LHSZ;
-{$D-,L-,Y-,C-,O+}
+
+{.$D-,L-,Y-,C-,O+}
 
 {$DEFINE LHEncode}  // include compression code
 {$DEFINE LHDecode}  // include decompression code
-{$DEFINE LHCrypt}   // include encryption code
+{.$DEFINE LHCrypt}   // include encryption code
 
 interface
 
 const
-  LH_ErrProtected   = -9;  // compressed Data are Password protected
+  LH_ErrProtected   = -9;  // compressed Data is password protected
   LH_ErrPassword    = -8;  // bad Password in Decoding
-  LH_ErrCRC         = -7;  // bad CRC or decompressed Data detected ( Decode only)
+  LH_ErrCRC         = -7;  // bad CRC or decompressed Data detected (Decode only)
   LH_ErrInflate     = -6;  // error in decode
   LH_ErrWrite       = -5;  // write error in Method WriteProc
   LH_ErrRead        = -4;  // read error in Method RreadProc
@@ -50,37 +64,36 @@ const
 
   LH_Ready          =  0;  // all ok
 
-// Compression Mode Flags
+  // Compression Mode Flags
   LH_TypeMask       = $FF00;
   LH_ModeMask       = $00FF;
 
   LH_Auto           = $0000;
 
-// mode flags
+  // mode flags
   LH_Fastest        = $0001;
   LH_Fast           = $0020;
   LH_Normal         = $0040;
   LH_High           = $0080;
   LH_Max            = $00FF;
 
-// type flags
+  // type flags
   LH_Text           = $0100;
   LH_Binary         = $0200;
   LH_Huffman        = $0400;
-
 
 type
   TReadProc  = function(var Buffer; Count: Integer): Integer of object;
   TWriteProc = function(const Buffer; Count: Integer): Integer of object;
 
 {$IFDEF LHEncode}
-function LHEncode(const Password: String; ReadProc: TReadProc; WriteProc: TWriteProc; Size, Mode: Integer): Integer;
-function LHEncodeBuffer(const Password: String; const Buffer; BufferSize: Integer; out Data: Pointer): Integer;
+function LHEncode(const Password: AnsiString; ReadProc: TReadProc; WriteProc: TWriteProc; Size, Mode: Integer): Integer;
+function LHEncodeBuffer(const Password: AnsiString; const Buffer; BufferSize: Integer; out Data: Pointer): Integer;
 {$ENDIF}
 
 {$IFDEF LHDecode}
-function LHDecode(const Password: String; ReadProc: TReadProc; WriteProc: TWriteProc; Size: Integer): Integer;
-function LHDecodeBuffer(const Password: String; const Buffer; BufferSize: Integer; out Data: Pointer): Integer;
+function LHDecode(const Password: AnsiString; ReadProc: TReadProc; WriteProc: TWriteProc; Size: Integer): Integer;
+function LHDecodeBuffer(const Password: AnsiString; const Buffer; BufferSize: Integer; out Data: Pointer): Integer;
 {$ENDIF}
 
 function LHCheck(Code: Integer): Integer; // raise exception if code is a error
@@ -88,7 +101,9 @@ function LHCheck(Code: Integer): Integer; // raise exception if code is a error
 implementation
 
 uses SysUtils;
-{ generated Codesizes with D3, only LHEncode, LHDecode are used, Bufferprocs ignored
+{
+  generated Codesizes with D3, only LHEncode, LHDecode are used, Bufferprocs ignored
+
   $DEFINES                         size in bytes
     LHEncode                          3.640
     LHEncode, LHCrypt                 4.256
@@ -99,11 +114,12 @@ uses SysUtils;
     LHEncode, LHDecode                5.148
     LHEncode, LHDecode, LHCrypt       6.104
 
-  Datesizes are allways 0
+  Datesizes are always 0
 }
+
 {$ALIGN ON}
 {$IFOPT O+}
-  {$DEFINE UseASM}
+  {.$DEFINE UseASM}
 {$ENDIF}
 
 const
@@ -116,13 +132,13 @@ const
   LH_HashSize       = 1 shl LH_HashBits; { Number of entries in hash table, should be }
   LH_HashMask       = LH_HashSize -1;    { Mask for hash key wrap }
 
-{ Adaptive Huffman variables }
+  { Adaptive Huffman variables }
 
   LH_CodeBits       =      32;
 
   LH_CopyRanges     =      16;
-//  (0, 2, 6, 14, 30, 62, 126, 254, 510, 1022, 2046, 4094, 8190, 16382, 32766, 65534, 131070, 262142, 524286);
-// stored dynamicaly in TLHData.Range, so we need NO Datasegement for LHSZ
+  // (0, 2, 6, 14, 30, 62, 126, 254, 510, 1022, 2046, 4094, 8190, 16382, 32766, 65534, 131070, 262142, 524286);
+  // stored dynamicaly in TLHData.Range, so we need NO Datasegement for LHSZ
 
   LH_MaxSize        = 131070 + LH_MaxCopy;  // dependend from LH_CopyRange
 
@@ -140,11 +156,10 @@ const
   LH_Root           =       1;
   LH_BufSize        =    1024 * 4; { buffer size, must be a multiply of Sizeof(Integer) }
 
-// LHState
+  // LHState
   LH_Init           =  1;
   LH_Working        =  2;
   LH_Finish         =  3;
-
 
 type
   PInteger = ^Integer;
@@ -152,13 +167,14 @@ type
   PWord    = ^Word;
 
   PLHData = ^TLHData;
-  TLHData = record
+  TLHData = packed record
     Data: array[0..LH_BufSize -1] of Byte;   // IN for Deflate, OUT for Inflate
     Code: array[0..LH_BufSize -1] of Byte;   // OUT for Deflate, IN for Inflate
 
     CRCTable: array[0..255] of Integer;
     CRC: Integer;
-// from here
+
+    // from here
     TextPos: Integer;
 
     DataPos: Integer;
@@ -173,36 +189,38 @@ type
 
     Flag: Integer;
     Text: array[0..LH_MaxSize + LH_MaxCopy] of Byte;
-// upto here, don't change this order, we fillout these with zero in one step !
+    // upto here, don't change this order, we fillout these with zero in one step !
 
     State: Integer; // current State
     InputSize: Integer;
     Read: TReadProc;
     Write: TWriteProc;
 
-{ Huffman tree }
+    { Huffman tree }
     Range: array[0..LH_CopyRanges] of Integer;
     RangeCopy: Integer;
     RangeMax: Integer;
 
     FreqCum: Integer;
     FreqReset: Integer;
+
     Left: array[LH_Root..LH_MaxChar] of Word;
     Right: array[LH_Root..LH_MaxChar] of Word;
     Parent: array[LH_Root..LH_MaxChar2] of Word;
     Freq: array[LH_Root..LH_MaxChar2] of Word;
+
     Chars: array[Byte] of Integer;
 
-{encryption, modified RC4 with 8Bit CBC Freedback and Datadependend SBox shuffeling}
-{$IFDEF LHCrypt}
-    PC4_T: array[0..255] of Byte;
-    PC4_P: Integer;
-    PC4_I: Byte;
-    PC4_J: Byte;
-    PC4_F: Byte;
-{$ENDIF}
+    {encryption, modified RC4 with 8Bit CBC Freedback and Datadependend SBox shuffeling}
+    {$IFDEF LHCrypt}
+      PC4_T: array[0..255] of Byte;
+      PC4_P: Integer;
+      PC4_I: Byte;
+      PC4_J: Byte;
+      PC4_F: Byte;
+    {$ENDIF}
 
-{LZSS data, beginning of deflate only datas}
+    {LZSS data, beginning of deflate only datas}
     Head: array[0..LH_HashSize -1] of Integer;
     Tail: array[0..LH_HashSize -1] of Integer;
     Next: array[0..LH_MaxSize  -1] of Integer;
@@ -215,67 +233,13 @@ type
     TextLen: Integer;
     RangeDist: Integer;
     RangeLimit: Integer;
-//    LastBytes: Integer;
-//    OverBytes: Integer;
+    //    LastBytes: Integer;
+    //    OverBytes: Integer;
 
     CurPos: Integer;
     NewPos: Integer;
     Distance: Integer;
   end;
-
-{$IFDEF LHDecode}
-  PLHInflate = ^TLHInflate;
-  TLHInflate = record
-    Data: array[0..LH_BufSize -1] of Byte;   // IN for Deflate, OUT for Inflate
-    Code: array[0..LH_BufSize -1] of Byte;   // OUT for Deflate, IN for Inflate
-
-    CRCTable: array[0..255] of Integer;
-    CRC: Integer;
-// from here
-    TextPos: Integer;
-
-    DataPos: Integer;
-    DataBytes: Integer;
-    DataSize: Integer;
-
-    CodeBits: Integer;
-    CodeBitsCount: Integer;
-    CodePos: Integer;
-    CodeBytes: Integer;
-    CodeSize: Integer;
-
-    Flag: Integer;
-    Text: array[0..LH_MaxSize + LH_MaxCopy] of Byte;
-// upto here, don't change this order, we fillout these with zero in one step !
-
-    State: Integer; // current State
-    InputSize: Integer;
-    Read: TReadProc;
-    Write: TWriteProc;
-
-{ Huffman tree }
-    Range: array[0..LH_CopyRanges] of Integer;
-    RangeCopy: Integer;
-    RangeMax: Integer;
-
-    FreqCum: Integer;
-    FreqReset: Integer;
-
-    Left: array[LH_Root..LH_MaxChar] of Word;
-    Right: array[LH_Root..LH_MaxChar] of Word;
-    Parent: array[LH_Root..LH_MaxChar2] of Word;
-    Freq: array[LH_Root..LH_MaxChar2] of Word;
-
-{encryption, modified RC4 with 8Bit CBC Freedback and Datadependend SBox shuffeling}
-{$IFDEF LHCrypt}
-    PC4_T: array[0..255] of Byte;
-    PC4_P: Integer;
-    PC4_I: Byte;
-    PC4_J: Byte;
-    PC4_F: Byte;
-{$ENDIF}
-  end;
-{$ENDIF}
 
 // procedures for deflation and inflation
 
@@ -366,7 +330,7 @@ end;
 {$ENDIF}
 
 {$IFDEF LHCrypt}
-procedure LHInitCrypt(LH: PLHData; const Password: String);
+procedure LHInitCrypt(LH: PLHData; const Password: AnsiString);
 var
   I,S,J: Integer;
   K: array[0..255] of Byte;
@@ -394,6 +358,7 @@ begin
   end;
 end;
 {$ENDIF}
+
 // Huffman support
 
 procedure LHInitHuffman(LH: PLHData);
@@ -1113,7 +1078,7 @@ Finish:
   until LH.State < LH_Ready;
 end;
 
-function LHEncode(const Password: String; ReadProc: TReadProc; WriteProc: TWriteProc; Size, Mode: Integer): Integer;
+function LHEncode(const Password: AnsiString; ReadProc: TReadProc; WriteProc: TWriteProc; Size, Mode: Integer): Integer;
 var
   LH: PLHData;
 begin
@@ -1378,12 +1343,12 @@ begin
   end;
 end;
 
-function LHDecode(const Password: String; ReadProc: TReadProc; WriteProc: TWriteProc; Size: Integer): Integer;
+function LHDecode(const Password: AnsiString; ReadProc: TReadProc; WriteProc: TWriteProc; Size: Integer): Integer;
 var
   LH: PLHData;
 begin
   try
-    GetMem(LH, SizeOf(TLHInflate));
+    GetMem(LH, SizeOf(TLHData));
   except
     Result := LH_ErrAlloc;
     Exit;
@@ -1400,7 +1365,7 @@ begin
   finally
     Result := LH.State;
     if Result >= LH_Ready then Result := LH.DataBytes;
-    LHFill(LH, SizeOf(TLHInflate));
+    LHFill(LH, SizeOf(TLHData));
     ReallocMem(LH, 0);
   end;
 end;
@@ -1410,9 +1375,9 @@ end;
 type
   PLHCallbackRec = ^TLHCallbackRec;
   TLHCallbackRec = packed record
-    Buffer: PChar;
+    Buffer: PWideChar;
     BufferSize: Integer;
-    Data: PChar;
+    Data: PWideChar;
     DataSize: Integer;
   end;
 
@@ -1424,7 +1389,8 @@ function LHGetRead(R: PLHCallbackRec): TReadProc;
 
   function DoRead(R: PLHCallbackRec; var Buffer; Count: Integer): Integer; register;
   begin
-    if Count > R.BufferSize then Count := R.BufferSize;
+    if Count > R.BufferSize then
+      Count := R.BufferSize;
     Move(R.Buffer^, Buffer, Count);
     Inc(R.Buffer, Count);
     Dec(R.BufferSize, Count);
@@ -1452,7 +1418,7 @@ begin
 end;
 
 {$IFDEF LHEncode}
-function LHEncodeBuffer(const Password: String; const Buffer; BufferSize: Integer; out Data: Pointer): Integer;
+function LHEncodeBuffer(const Password: AnsiString; const Buffer; BufferSize: Integer; out Data: Pointer): Integer;
 var
   R: TLHCallbackRec;
 begin
@@ -1476,7 +1442,7 @@ end;
 {$ENDIF}
 
 {$IFDEF LHDecode}
-function LHDecodeBuffer(const Password: String; const Buffer; BufferSize: Integer; out Data: Pointer): Integer;
+function LHDecodeBuffer(const Password: AnsiString; const Buffer; BufferSize: Integer; out Data: Pointer): Integer;
 var
   R: TLHCallbackRec;
 begin
@@ -1504,12 +1470,12 @@ resourcestring
   sLHSZUnspecific = 'Error in LHSZ library';
   sLHSZAlloc      = 'Error in LHSZ memory allocation';
   sLHSZInit       = 'Error in LHSZ initialization';
-  sLHSZRead       = 'Readerror in LHSZ library';
-  sLHSZWrite      = 'Writeerror in LHSZ library';
-  sLHSZInflate    = 'Infalteerror in LHSZ library';
+  sLHSZRead       = 'Read Error in LHSZ library';
+  sLHSZWrite      = 'Write Error in LHSZ library';
+  sLHSZInflate    = 'Infalte Error in LHSZ library';
   sLHSZWrongCRC   = 'Checksum Error in LHSZ library';
   sLHSZPassword   = 'Wrong Password in LHSZ library';
-  sLHSZProtected  = 'LHSZ data are password protected';
+  sLHSZProtected  = 'LHSZ data is password protected';
 
 const
   sError: array[-9..-1] of PResStringRec =
@@ -1525,4 +1491,3 @@ begin
 end;
 
 end.
-
