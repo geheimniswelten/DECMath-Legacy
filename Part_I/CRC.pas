@@ -1,29 +1,35 @@
-{Copyright:      Hagen Reddmann  HaReddmann at T-Online dot de
- Author:         Hagen Reddmann
- Remarks:        Public Domain, this Copyright must be included
- known Problems: none
- Version:        5.1, Delphi Encryption Compendium
-                 Delphi 2-7, BCB 3-4, designed and testet under D3-7
- Description:    threadsafe CRC Checksum functions as single unit.
-                 Implementation of Cyclic Redundance Checking.
-                 Supports ALL possible CRC's, per default are follow
-                 Standard CRC's supported:
-                   CRC-8, CRC-10, CRC-12 (Mobil Telephone),
-                   CRC-16, CRC-16-CCITT, CRC-16-ZModem,
-                   CRC-24 (PGP's MIME64 Armor CRC),
-                   CRC-32, CRC-32-CCITT and CRC-32-ZModem.
+{*****************************************************************************
 
- Remarks:
-   - this unit should be fully PIC safe, means Kylix compatible
-   - this unit consume only 728 - max. 952 Bytes code if all functions are used
-   - 2 * 4 Bytes in Datasegment (BSS) are used
-   - on runtime it need two memoryblocks of size 2x1056 bytes if
-     CRC16() and CRC32() are called, if none of both is used no memory are need
-   - on multithread application and the use of CRC16() or CRC32() You should call
-     CRCInitThreadSafe at initialization of the application or before threaded
-     use of CRC16() or CRC32().
-   - yes, we could it realy more speedup, as example loop unrolling, but then the
-     code grows and i wanted a good compromiss between speed and size.
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Author:  (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
+
+  Description:      threadsafe CRC Checksum functions as single unit.
+                    Implementation of Cyclic Redundance Checking.
+                    Supports ALL possible CRC's, per default are follow
+                    Standard CRC's supported:
+                      CRC-8, CRC-10, CRC-12 (Mobil Telephone),
+                      CRC-16, CRC-16-CCITT, CRC-16-ZModem,
+                      CRC-24 (PGP's MIME64 Armor CRC),
+                      CRC-32, CRC-32-CCITT and CRC-32-ZModem.
+
+  Note:
+  - this unit should be fully PIC safe, means Kylix compatible
+  - this unit consume only 728 - max. 952 Bytes code if all functions are used
+  - 2 * 4 Bytes in Datasegment (BSS) are used
+  - on runtime it need two memoryblocks of size 2x1056 bytes if
+    CRC16() and CRC32() are called, if none of both is used no memory are need
+  - on multithread application and the use of CRC16() or CRC32() You should call
+    CRCInitThreadSafe at initialization of the application or before threaded
+    use of CRC16() or CRC32().
+  - yes, we could it realy more speedup, as example loop unrolling, but then the
+    code grows and i wanted a good compromiss between speed and size.
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -36,57 +42,17 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- }
+
+*****************************************************************************}
+
 unit CRC;
+
 {$I VER.INC}
+
 interface
 
-type
-// CRC Definitions Structure
-  PCRCDef = ^TCRCDef;
-  TCRCDef = packed record                // don't reorder or change this structure
-    Table: array[0..255] of Cardinal;    // Lookuptable, precomputed in CRCSetup
-    CRC: Cardinal;                       // intermediate CRC
-    Inverse: LongBool;                   // is this Polynomial a inverse function
-    Shift: Cardinal;                     // Shift Value for CRCCode, more speed
-    InitVector: Cardinal;                // Startvalue of CRC Computation
-    FinalVector: Cardinal;               // final XOR Vector of computed CRC
-    Mask: Cardinal;                      // precomputed AND Mask of computed CRC
-    Bits: Cardinal;                      // Bitsize of CRC
-    Polynomial: Cardinal;                // used Polynomial
-  end;                                   // SizeOf(TCRCDef) = 1056 = 0420h
-
-// predefined Standard CRC Types
-  TCRCType = (CRC_8, CRC_10, CRC_12, CRC_16, CRC_16CCITT, CRC_16XModem, CRC_24,
-              CRC_32, CRC_32CCITT, CRC_32ZModem);
-type
-  TReadMethod = function(var Buffer; Count: LongInt): LongInt of object;
-
-// calculates a CRC over Buffer with Size Bytes Length, used Algo in CRCType, all is done in one Step
-function CRCCalc(CRCType: TCRCType; const Buffer; Size: Cardinal): Cardinal;
-// use a callback
-function CRCCalcEx(CRCType: TCRCType; ReadMethod: TReadMethod; Size: Cardinal{$IFDEF VER_D4H} = $FFFFFFFF{$ENDIF}): Cardinal;
-// initialize CRC Definition with CRCType Standard CRC
-function CRCInit(var CRCDef: TCRCDef; CRCType: TCRCType): Boolean;
-// initilaize CRC Definition with a custom Algorithm
-function CRCSetup(var CRCDef: TCRCDef; Polynomial, Bits, InitVector, FinalVector: Cardinal; Inverse: LongBool): Boolean;
-// process over Buffer with Size Bytes Length a CRC definied in CRCDef.
-// Result is actual computed CRC with correction, same as CRCDone(),
-// CRCDef.CRC holds the actual computed CRC, a second/more call to CRCCode
-// computes than both/more buffers as one buffer.
-function CRCCode(var CRCDef: TCRCDef; const Buffer; Size: Cardinal): Cardinal;
-// use a callback, eg. TStream.Read(). I hate D4 because ther don't love here overloaded procedures
-function CRCCodeEx(var CRCDef: TCRCDef; ReadMethod: TReadMethod; Size: Cardinal{$IFDEF VER_D4H} = $FFFFFFFF{$ENDIF}): Cardinal;
-// retruns corrected CRC as definied in CRCDef, and reset CRCDef.CRC to InitVector
-function CRCDone(var CRCDef: TCRCDef): Cardinal;
-// predefined CRC16-Standard, call CRC := CRC16(0, Data, SizeOf(Data));
-function CRC16(CRC: Word; const Buffer; Size: Cardinal): Word;
-// predefined CRC32-CCITT, call CRC := CRC32(0, Data, SizeOf(Data));
-function CRC32(CRC: Cardinal; const Buffer; Size: Cardinal): Cardinal;
-// make it threadsafe
-procedure CRCInitThreadSafe;
-
-{ how to use:
+{
+how to use:
 
 var
   CRC16: Word;
@@ -100,17 +66,72 @@ var
 begin
   CRCInit(CRC, CRC_32);                         // setup CRC data structure
   CRCCode(CRC, Data, SizeOf(Data));             // returns correct CRC32 for this Data
-  CRCCode(CRC, PChar(String)^, Length(String)); // returns correct CRC32 for String AND CRC.CRC holds intermediate
+  CRCCode(CRC, PChar(String)^, Length(String) * SizeOf(Char)); // returns correct CRC32 for String AND CRC.CRC holds intermediate
   CRC32 := CRCDone(CRC);                        // returns correct CRC32 for Data + String
-// after CRCDone we can restart a new calculation  
+  // after CRCDone we can restart a new calculation  
 end;
 
-  above examples are fully threadsafe and requiere ~ $0420 Bytes Stackspace.
+  above examples are fully threadsafe and require ~ $0420 Bytes Stack space.
 }
+
+type
+  // CRC Definitions Structure
+  PCRCDef = ^TCRCDef;
+  TCRCDef = packed record              // don't reorder or change this structure
+    Table: array[0..255] of Cardinal;  // Lookuptable, precomputed in CRCSetup
+    CRC: Cardinal;                     // intermediate CRC
+    Inverse: LongBool;                 // is this Polynomial a inverse function
+    Shift: Cardinal;                   // Shift Value for CRCCode, more speed
+    InitVector: Cardinal;              // Startvalue of CRC Computation
+    FinalVector: Cardinal;             // final XOR Vector of computed CRC
+    Mask: Cardinal;                    // precomputed AND Mask of computed CRC
+    Bits: Cardinal;                    // Bitsize of CRC
+    Polynomial: Cardinal;              // used Polynomial
+  end;                                 // SizeOf(TCRCDef) = 1056 = 0420h
+
+  // predefined Standard CRC Types
+  TCRCType = (CRC_8, CRC_10, CRC_12, CRC_16, CRC_16CCITT, CRC_16XModem, CRC_24,
+              CRC_32, CRC_32CCITT, CRC_32ZModem);
+type
+  TReadMethod = function(var Buffer; Count: LongInt): LongInt of object;
+
+// calculates a CRC over Buffer with Size Bytes Length, used Algo in CRCType, all is done in one Step
+function CRCCalc(CRCType: TCRCType; const Buffer; Size: Cardinal): Cardinal;
+
+// use a callback
+function CRCCalcEx(CRCType: TCRCType; ReadMethod: TReadMethod; Size: Cardinal{$IFDEF VER_D4H} = $FFFFFFFF{$ENDIF}): Cardinal;
+
+// initialize CRC Definition with CRCType Standard CRC
+function CRCInit(var CRCDef: TCRCDef; CRCType: TCRCType): Boolean;
+
+// initilaize CRC Definition with a custom Algorithm
+function CRCSetup(var CRCDef: TCRCDef; Polynomial, Bits, InitVector, FinalVector: Cardinal; Inverse: LongBool): Boolean;
+
+// process over Buffer with Size Bytes Length a CRC definied in CRCDef.
+// Result is actual computed CRC with correction, same as CRCDone(),
+// CRCDef.CRC holds the actual computed CRC, a second/more call to CRCCode
+// computes than both/more buffers as one buffer.
+function CRCCode(var CRCDef: TCRCDef; const Buffer; Size: Cardinal): Cardinal;
+
+// use a callback, eg. TStream.Read(). I hate D4 because they don't love overloaded procedures here
+function CRCCodeEx(var CRCDef: TCRCDef; ReadMethod: TReadMethod; Size: Cardinal{$IFDEF VER_D4H} = $FFFFFFFF{$ENDIF}): Cardinal;
+
+// retruns corrected CRC as definied in CRCDef, and reset CRCDef.CRC to InitVector
+function CRCDone(var CRCDef: TCRCDef): Cardinal;
+
+// predefined CRC16-Standard, call CRC := CRC16(0, Data, SizeOf(Data));
+function CRC16(CRC: Word; const Buffer; Size: Cardinal): Word;
+
+// predefined CRC32-CCITT, call CRC := CRC32(0, Data, SizeOf(Data));
+function CRC32(CRC: Cardinal; const Buffer; Size: Cardinal): Cardinal;
+
+// make it threadsafe
+procedure CRCInitThreadSafe;
 
 implementation
 
-function CRCSetup(var CRCDef: TCRCDef; Polynomial, Bits, InitVector, FinalVector: Cardinal; Inverse: LongBool): Boolean; register;
+function CRCSetup(var CRCDef: TCRCDef; Polynomial, Bits, InitVector,
+  FinalVector: Cardinal; Inverse: LongBool): Boolean; register;
 asm // initialize CRCDef according to the parameters, calculate the lookup table
        CMP   ECX,8
        JB    @@8
@@ -215,7 +236,8 @@ asm // initialize CRCDef according to the parameters, calculate the lookup table
        NEG   EAX
 end;
 
-function CRCCode(var CRCDef: TCRCDef; const Buffer; Size: Cardinal): Cardinal; register;
+function CRCCode(var CRCDef: TCRCDef; const Buffer;
+  Size: Cardinal): Cardinal; register;
 asm // do the CRC computation
        JECXZ @@5
        TEST  EDX,EDX
@@ -259,61 +281,63 @@ asm // do the CRC computation
 @@5:   MOV   EAX,[EAX].TCRCDef.CRC
 end;
 
-function CRCCodeEx(var CRCDef: TCRCDef; ReadMethod: TReadMethod; Size: Cardinal): Cardinal;
+function CRCCodeEx(var CRCDef: TCRCDef; ReadMethod: TReadMethod;
+  Size: Cardinal): Cardinal;
 var
   Buffer: array[0..1023] of Char;
   Count: LongInt;
 begin
   repeat
-    if Size > SizeOf(Buffer) then Count := SizeOf(Buffer) else Count := Size;
+    if Size > SizeOf(Buffer) then
+      Count := SizeOf(Buffer)
+    else
+      Count := Size;
     Count := ReadMethod(Buffer, Count);
     Result := CRCCode(CRCDef, Buffer, Count);
     Dec(Size, Count);
   until (Size = 0) or (Count = 0);
 end;
 
+{$IFOPT O-}{$O+}{$DEFINE NoOpt}{$ENDIF}
 function CRCInit(var CRCDef: TCRCDef; CRCType: TCRCType): Boolean; register;
 type
   PCRCTab = ^TCRCTab;
   TCRCTab = array[TCRCType] of packed record
-    Poly,Bits,Init,FInit: Cardinal;
+    Poly, Bits, Init, FInit: Cardinal;
     Inverse: LongBool;
   end;
 
-{$IFOPT O-}{$O+}{$DEFINE NoOpt}{$ENDIF}
-  procedure CRCTab;          
+  procedure CRCTab;
   asm
-//           Polynom   Bits  InitVec    FinitVec  Inverse
-       DD    $000000D1,  8, $00000000, $00000000, -1   // CRC_8  GSM/ERR
-       DD    $00000233, 10, $00000000, $00000000, -1   // CRC_10 ATM/OAM Cell
-       DD    $0000080F, 12, $00000000, $00000000, -1   // CRC_12
-       DD    $00008005, 16, $00000000, $00000000, -1   // CRC_16 ARC,IBM
-       DD    $00001021, 16, $00001D0F, $00000000,  0   // CRC_16 CCITT ITU
-       DD    $00008408, 16, $00000000, $00000000, -1   // CRC_16 XModem
-       DD    $00864CFB, 24, $00B704CE, $00000000,  0   // CRC_24
-       DD    $9DB11213, 32, $FFFFFFFF, $FFFFFFFF, -1   // CRC_32
-       DD    $04C11DB7, 32, $FFFFFFFF, $FFFFFFFF, -1   // CRC_32CCITT
-       DD    $04C11DB7, 32, $FFFFFFFF, $00000000, -1   // CRC_32ZModem
+    //    Polynom   Bits InitVec    FinitVec   Inverse
+    DD    $000000D1,  8, $00000000, $00000000, -1   // CRC_8  GSM/ERR
+    DD    $00000233, 10, $00000000, $00000000, -1   // CRC_10 ATM/OAM Cell
+    DD    $0000080F, 12, $00000000, $00000000, -1   // CRC_12
+    DD    $00008005, 16, $00000000, $00000000, -1   // CRC_16 ARC,IBM
+    DD    $00001021, 16, $00001D0F, $00000000,  0   // CRC_16 CCITT ITU
+    DD    $00008408, 16, $00000000, $00000000, -1   // CRC_16 XModem
+    DD    $00864CFB, 24, $00B704CE, $00000000,  0   // CRC_24
+    DD    $9DB11213, 32, $FFFFFFFF, $FFFFFFFF, -1   // CRC_32
+    DD    $04C11DB7, 32, $FFFFFFFF, $FFFFFFFF, -1   // CRC_32CCITT
+    DD    $04C11DB7, 32, $FFFFFFFF, $00000000, -1   // CRC_32ZModem
 
-// some other CRC's, not all yet verfied
-//     DD    $00000007,  8, $00000000, $00000000, -1   // CRC_8  ATM/HEC
-//     DD    $00000007,  8, $00000000, $00000000,  0   // CRC_8 the SMBus Working Group
-//     DD    $00004599, 15, $00000000, $00000000, -1   // CRC_15 CANBus
-//     DD    $00001021, 16, $00000000, $00000000,  0   // CRC_16ZModem
-//     DD    $00001021, 16, $0000FFFF, $00000000,  0   // CRC_16 CCITT British Aerospace 
-//     DD    $00004003, 16, $00000000, $00000000, -1   // CRC_16 reversed
-//     DD    $00001005, 16, $00000000, $00000000, -1   // CRC_16 X25
-//     DD    $00000053, 16, $00000000, $00000000, -1   // BasicCard 16Bit CRC (sparse poly for Crypto MCU)
-//     DD    $000000C5, 32, $00000000, $00000000, -1   // BasicCard 32Bit CRC
-
-// http://dbforums.com/showthread.php?threadid=122012
+    // some other CRC's, not all yet verfied
+    // DD    $00000007,  8, $00000000, $00000000, -1   // CRC_8  ATM/HEC
+    // DD    $00000007,  8, $00000000, $00000000,  0   // CRC_8 the SMBus Working Group
+    // DD    $00004599, 15, $00000000, $00000000, -1   // CRC_15 CANBus
+    // DD    $00001021, 16, $00000000, $00000000,  0   // CRC_16ZModem
+    // DD    $00001021, 16, $0000FFFF, $00000000,  0   // CRC_16 CCITT British Aerospace
+    // DD    $00004003, 16, $00000000, $00000000, -1   // CRC_16 reversed
+    // DD    $00001005, 16, $00000000, $00000000, -1   // CRC_16 X25
+    // DD    $00000053, 16, $00000000, $00000000, -1   // BasicCard 16Bit CRC (sparse poly for Crypto MCU)
+    // DD    $000000C5, 32, $00000000, $00000000, -1   // BasicCard 32Bit CRC
   end;
-{$IFDEF NoOpt}{$O-}{$ENDIF}
 
 begin
   with PCRCTab(@CRCTab)[CRCType] do
     Result := CRCSetup(CRCDef, Poly, Bits, Init, FInit, Inverse);
 end;
+{$IFDEF NoOpt}{$O-}{$ENDIF}
 
 function CRCDone(var CRCDef: TCRCDef): Cardinal; register;
 asm // finalize CRCDef after a computation
@@ -438,7 +462,9 @@ begin
 end;
 
 initialization
+
 finalization
   if FCRC16 <> nil then FreeMem(FCRC16);
   if FCRC32 <> nil then FreeMem(FCRC32);
+  
 end.
