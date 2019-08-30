@@ -1,0 +1,21 @@
+Michael Puff                                          Last modified: 2012-01-26
+http://michael-puff.de
+
+                        DEC - Aktuelle Informationen
+
+Ein Wort vor weg
+						
+Mittlerweile ist die Entwicklung des DEC (Delphi Encryption Compendium) in die
+Hände von Arvid "Assertor" Winkelsdorf übergegangen. Hagen Reddmann hat sich,
+meines Wissen, komplett aus der Weiterentwicklung zurückgezogen. Arvid
+Winkelsdorf hat aber schon mit Hagen zusammen an dem Projekt gearbeitet, bevor
+er es komplett übernommen hat. Man kann also davon ausgehen, dass das DEC in
+guten Händen ist.
+
+Aktueller Stand Januar 2012
+
+Ein aktuelles Statement von Arvid und wie es um die Entwicklung steht, kann man
+hier: http://www.delphipraxis.net/1144238-post35.html nachlesen.
+Die vollständige Diskussion kann man hier
+http://www.delphipraxis.net/151334-eure-anregungen-fuer-das-dec-5-3-gebraucht.html
+verfolgen.
