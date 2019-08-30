@@ -1,10 +1,18 @@
-{Copyright:      Heiko Behrens, Hagen Reddmann
- Author:         Heiko Behrens (Initiator and Developer), Hagen Reddmann
- Descriptions:   TypeInfoEx allows RTTI retrieval of all modules (BPLs, Dlls) in a
-                 comfortable and reversed way.
- Versions:       Delphi 5 and above, testet on D5
- Remarks:        this Copyright must be included
+{*****************************************************************************
 
+  Delphi Encryption Compendium (DEC Part I)
+  Version 5.2, Part I, for Delphi 7 - 2009
+
+  Remarks:          Freeware, Copyright must be included
+
+  Original Authors: (c) 2006 Hagen Reddmann, HaReddmann [at] T-Online [dot] de
+                    with contributions by Heiko Behrens
+  Modifications:    (c) 2008 Arvid Winkelsdorf, info [at] digivendo [dot] de
+
+  Last change:      02. November 2008
+
+  Description:      TypeInfoEx allows RTTI retrieval of all modules
+                    (BPLs, Dlls) in a comfortable and reversed way.
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -18,7 +26,8 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-}
+*****************************************************************************}
+
 unit TypInfoEx;
 
 interface
@@ -35,47 +44,67 @@ type
 const
   allModules = 0;
 
-// enumeriert über alle RTTI Records eines Modules oder aller geladenen Module, gibt gefundene PTypeInfo zurück falls ACallback TRUE ergibt
-// falls ACallback =nil gibt die Funktion den ersten RTTI Record zurück
+// enumerates all RTTI records of a given module or all modules
+// returns found PTypeInfo if ACallback is returning true
+// returns 1st RTTI record if ACallback is nil
 function EnumTypeInfo(ACallback: TTypeInfoEnumCallback; AModule: LongWord = allModules; AUserData: Pointer = nil): PTypeInfo; overload;
-// enumeriert über alle RTTI Records eines TTypeInfoArray's, gibt gefundene PTypeInfo zurück falls ACallback TRUE ergibt
+
+// enumerates all RTTI records of a given TTypeInfoArray
+// returns PTypeInfo is ACallback is true
 function EnumTypeInfo(const ATypeInfoArray: TTypeInfoArray; ACallback: TTypeInfoEnumCallback; AUserData: Pointer = nil): PTypeInfo; overload;
 function EnumTypeInfo(const ACallback: TTypeInfoEnumMethod; AModule: LongWord = allModules): PTypeInfo; overload;
-// erzeugt ein Array aller PTypeInfo's die ACallback mit TRUE filtert
-// falls ACallback =nil gibt die Funktion alle RTTI Record's zurück
+
+// creates an array with all PTypeInfo which ACallback is filtering when true
+// if ACallback is nil function returns all RTTI records
 function CollectTypeInfo(ACallback: TTypeInfoEnumCallback; AModule: LongWord = allModules; AUserData: Pointer = nil): TTypeInfoArray; overload;
 function CollectTypeInfo(const ACallback: TTypeInfoEnumMethod; AModule: LongWord = allModules): TTypeInfoArray; overload;
 function CollectTypeInfo(const ATypeInfoArray: TTypeInfoArray; ACallback: TTypeInfoEnumCallback; AUserData: Pointer = nil): TTypeInfoArray; overload;
 function CollectTypeInfo(const ATypeInfoArray: TTypeInfoArray; const ACallback: TTypeInfoEnumMethod): TTypeInfoArray; overload;
-// erzeugt ein Array aller PTypeInfo's die ein Interface darstellen
+
+// creates an array of an Interface's PTypeInfo
 function CollectInterfaces(AModule: LongWord = allModules): TTypeInfoArray;
-// erzeugt ein Array aller PTypeInfo's die ein Interface darstellen und durch die Klasse AClass impelemntiert werden
+
+// creates an Array of all PTypeInfos an interface is publishing and which are implemented through the class AClass
 function CollectInterfaceTypesOfClass(AClass: TClass = nil; AModule: LongWord = 0): TTypeInfoArray; overload;
 function CollectInterfaceTypesOfClass(const ATypeInfoArray: TTypeInfoArray; AClass: TClass = nil): TTypeInfoArray; overload;
-// sucht TypeInfo des Interfaces das die AGUID hat
+
+// search for the TypeInfo of an Interface having the AGUID
 function FindTypeInfo(const ATypeInfoArray: TTypeInfoArray; const AGUID: TGUID): PTypeInfo; overload;
 function FindTypeInfo(const AGUID: TGUID; AModule: LongWord = allModules): PTypeInfo; overload;
-// sucht TypeInfo mit dem TypeName
-function FindTypeInfo(const ATypeName: String; AModule: LongWord = allModules): PTypeInfo; overload;
-function FindTypeInfo(const ATypeInfoArray: TTypeInfoArray; const ATypeName: String): PTypeInfo; overload;
-// sucht Klasse mit dem AClassName
-function FindClassByName(const AClassName: String; AModule: LongWord = allModules): TClass; overload;
-function FindClassByName(const ATypeInfoArray: TTypeInfoArray; const AClassName: String): TClass; overload;
-// sucht alle TypInfo's aller Klasse die von der Klasse AInheritsFrom abgeleitet wurden
+
+// search for TypeInfo with TypeName
+function FindTypeInfo(const ATypeName: ShortString; AModule: LongWord = allModules): PTypeInfo; overload;
+function FindTypeInfo(const ATypeInfoArray: TTypeInfoArray; const ATypeName: ShortString): PTypeInfo; overload;
+
+// search for class with AClassName
+function FindClassByName(const AClassName: ShortString; AModule: LongWord = allModules): TClass; overload;
+function FindClassByName(const ATypeInfoArray: TTypeInfoArray; const AClassName: ShortString): TClass; overload;
+
+// searches all TypeInfo of all classes derivated from AInheritsFrom
 function FindClasses(AInheritsFrom: TClass; AModule: LongWord = allModules): TTypeInfoArray; overload;
 function FindClasses(const ATypeInfoArray: TTypeInfoArray; AInheritsFrom: TClass): TTypeInfoArray; overload;
-// wandelt ATypeInfo einer Klasse in deren Klassentyp um
+
+// transforms ATypeInfo of a given class into the corresponding classtype
 function TypeInfoToClass(ATypeInfo: PTypeInfo): TClass;
-// gibt das Modul zurück in dem ATypeInfo residiert
+
+// returns the module in which ATypeInfo resides
 function FindHInstanceOfTypeInfo(ATypeInfo: PTypeInfo): LongWord;
 function ModuleHasType(AModule: LongWord; ATypeInfo: PTypeInfo): Boolean;
-// sortiert ATypeInfoArray per ACallback
+
+// sort ATypeInfoArray by ACallback
 function SortTypeInfoArray(var ATypeInfoArray: TTypeInfoArray; ACallback: TTypeInfoSortCallback; AUserData: Pointer = nil): Boolean; overload;
 function SortTypeInfoArray(var ATypeInfoArray: TTypeInfoArray; const ACallback: TTypeInfoSortMethod): Boolean; overload;
 
 implementation
 
 uses SysUtils;
+
+{$IFNDEF UNICODE}
+function CharInSet(C: Char; const CharSet: TSysCharSet): Boolean;
+begin
+  Result := C in CharSet;
+end;
+{$ENDIF}
 
 function CompareGUID(const GUID1, GUID2: TGUID): Integer;
 // can be used to sort a list of GUIDs
@@ -98,7 +127,7 @@ end;
 function DoEnumTypeInfo(AModule: LongWord; ACallback: TTypeInfoEnumCallback; AUserData: Pointer): PTypeInfo; overload;
 // copyright (c) 1998 Hagen Reddmann
 
-  function GetBaseOfCode(AModule: LongWord; var ACodeStart, ACodeEnd: PChar): Boolean; register;
+  function GetBaseOfCode(AModule: LongWord; var ACodeStart, ACodeEnd: PAnsiChar): Boolean; register;
   // get Codesegment pointers, check if module is a valid PE
   asm
            PUSH  EDI
@@ -125,7 +154,7 @@ type
   PLongWord = ^LongWord;
   PByte = ^Byte;
 var
-  P,E,K,N: PChar;
+  P,E,K,N: PAnsiChar;
   L: Integer;
 begin
   Result := nil;
@@ -139,18 +168,21 @@ begin
         begin
           L := PByte(K + 1)^;  // length Info.Name
           N := K + 2;          // @Info.Name[1]
-          if (L > 0) and (N^ in ['_', 'a'..'z', 'A'..'Z']) then  // valid ident ??
+          ;
+          if (L > 0) and CharInSet(N^, ['_', 'a'..'z', 'A'..'Z']) then  // valid ident ??
           begin
             repeat
               Inc(N);
               Dec(L);
-            until (L = 0) or not (N^ in ['_', 'a'..'z', 'A'..'Z', '0'..'9']);
+            until (L = 0) or not CharInSet(N^, ['_', 'a'..'z', 'A'..'Z', '0'..'9']);
             if L = 0 then // length and ident valid
               if not Assigned(ACallback) or ACallback(AUserData, Pointer(K)) then // tell it and if needed abort iteration
               begin
                 Result := Pointer(K);
                 Exit;
-              end else K := N;
+              end
+              else
+                K := N;
           end;
         end;
         P := K;
@@ -308,17 +340,17 @@ end;
 
 function DoTypeName(AName: PChar; ATypeInfo: PTypeInfo): Boolean; register;
 begin
-  Result := AnsiCompareText(AName, ATypeInfo.Name) = 0;
+  Result := CompareText(AName, String(ATypeInfo.Name)) = 0;
 end;
 
-function FindTypeInfo(const ATypeName: String; AModule: LongWord): PTypeInfo;
+function FindTypeInfo(const ATypeName: ShortString; AModule: LongWord): PTypeInfo;
 begin
-  Result := EnumTypeInfo(@DoTypeName, AModule, PChar(ATypeName));
+  Result := EnumTypeInfo(@DoTypeName, AModule, PChar(@ATypeName));
 end;
 
-function FindTypeInfo(const ATypeInfoArray: TTypeInfoArray; const ATypeName: String): PTypeInfo;
+function FindTypeInfo(const ATypeInfoArray: TTypeInfoArray; const ATypeName: ShortString): PTypeInfo;
 begin
-  Result := EnumTypeInfo(ATypeInfoArray, @DoTypeName, PChar(ATypeName));
+  Result := EnumTypeInfo(ATypeInfoArray, @DoTypeName, PChar(@ATypeName));
 end;
 
 function TypeInfoToClass(ATypeInfo: PTypeInfo): TClass;
@@ -327,12 +359,12 @@ begin
     else Result := GetTypeData(ATypeInfo).ClassType;
 end;
 
-function FindClassByName(const AClassName: String; AModule: LongWord): TClass;
+function FindClassByName(const AClassName: ShortString; AModule: LongWord): TClass;
 begin
   Result := TypeInfoToClass(FindTypeInfo(AClassName, AModule));
 end;
 
-function FindClassByName(const ATypeInfoArray: TTypeInfoArray; const AClassName: String): TClass;
+function FindClassByName(const ATypeInfoArray: TTypeInfoArray; const AClassName: ShortString): TClass;
 begin
   Result := TypeInfoToClass(FindTypeInfo(ATypeInfoArray, AClassName));
 end;
@@ -404,7 +436,6 @@ function SortTypeInfoArray(var ATypeInfoArray: TTypeInfoArray; const ACallback: 
 begin
   Result := Assigned(ACallback) and SortTypeInfoArray(ATypeInfoArray, TMethod(ACallback).Code, TMethod(ACallback).Data);
 end;
-
 
 {
 procedure Test;
