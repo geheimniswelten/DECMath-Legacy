@@ -28,7 +28,7 @@ type
   IGFpECPolyTable = interface
     ['{126BE100-061D-4067-9E0A-E2A490AF5CEA}']
     function Get(var A: IPoly; Discriminant: Cardinal): Integer;
-    function Coefficients(var A,B: IInteger; Discriminant: Cardinal): Integer;
+    function Coefficients(var A, B: IInteger; Discriminant: Cardinal): Integer;
   end;
 
   TGFpECGetPoly = function: IGFpECPolyTable;
@@ -44,7 +44,7 @@ function NECBuild(var E: IGFpECC; FieldBitSize: Integer = 168; CofactorBitSize: 
                    Flag: TECBuildFlag = Normal;
                    SeedBitSize: Word = 31; HashClass: TDECHashClass = nil;
                    MinCM: Cardinal = 0; MaxCM: Cardinal = MaxInt): Cardinal; overload;
-function NECRegisterPolyTable(GetPoly: TGFpECGetPoly): Boolean;
+function NECRegisterPolyTable  (GetPoly: TGFpECGetPoly): Boolean;
 function NECUnregisterPolyTable(GetPoly: TGFpECGetPoly): Boolean;
 function NECPolyTable: IGFpECPolyTable;
 

@@ -46,8 +46,8 @@ type
     function GetFlags: Cardinal;
     function CurCount: Cardinal;
     function MaxCount: Cardinal;
-    function CurSize: Cardinal;
-    function MaxSize: Cardinal;
+    function CurSize:  Cardinal;
+    function MaxSize:  Cardinal;
     function ThreadID: Cardinal;
 
     function SetIdle(const Notify: IPoolNotify = nil; Delay: Cardinal = 100): IPoolNotify;

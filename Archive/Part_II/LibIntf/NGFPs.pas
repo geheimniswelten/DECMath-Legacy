@@ -30,7 +30,7 @@ type
 // Weierstrass form  y^2 = x^3 + ax + b
 // where a and b are integers modulo p and  4a^3 + 27b^2 <> 0 mod p
   IGFpEC = packed record
-    P,A,B: IInteger;
+    P, A, B: IInteger;
   end;
 
   TECState = (Empty, WrongField, WrongCoefficients, WrongBasePoint, WrongOrder,
@@ -40,9 +40,9 @@ type
   IGFpECC = packed record
     EC: IGFpEC;     // field and curve
     ID: IIDPrime;   // verifiable ID of EC.P
-    G: I2Point;     // basepoint
-    R: IInteger;    // order, prime  {called n in EC-DSA}
-    K: IInteger;    // cofactor      {called h in EC-DSA}
+    G:  I2Point;    // basepoint
+    R:  IInteger;   // order, prime  {called n in EC-DSA}
+    K:  IInteger;   // cofactor      {called h in EC-DSA}
   end;              // FR = field representation
                     // d  = private key IInteger
                     // Q  = public key I2point
@@ -52,47 +52,47 @@ type
 
   IGFpMulPrecomputation = interface
     ['{126BE0A0-061D-4067-9E0A-E2A490AF5CEA}']
-    procedure Precompute(const B: I2Point; const E: IGFpEC; CMaxBitSize: Integer);
-    function  Mul(var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC; var Res: Boolean): Boolean;
-    function  Mul2k(var A: I2Point; const B: I2Point; K: Cardinal; const E: IGFpEC; var Res: Boolean): Boolean;
+    procedure Precompute           (const B: I2Point;                    const E: IGFpEC; CMaxBitSize: Integer);
+    function  Mul  (var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC; var Res: Boolean): Boolean;
+    function  Mul2k(var A: I2Point; const B: I2Point;       K: Cardinal; const E: IGFpEC; var Res: Boolean): Boolean;
     procedure Save(Stream: TStream);
     procedure Load(Stream: TStream);
   end;
 
 procedure NECRaise(State: TECState); overload;
-function  NECCheck(const E: IGFpEC; RaiseException: Boolean = False): TECState; overload;
+function  NECCheck(const E: IGFpEC;  RaiseException: Boolean = False): TECState; overload;
 function  NECCheck(const E: IGFpECC; RaiseException: Boolean = False): TECState; overload;
-function  NECCheck(const P: array of I2Point; const E: IGFpEC; RaiseException: Boolean = False): TECState; overload;
+function  NECCheck(const P: array of I2Point; const E: IGFpEC;  RaiseException: Boolean = False): TECState; overload;
 function  NECCheck(const P: array of I2Point; const E: IGFpECC; RaiseException: Boolean = False): TECState; overload;
-function  NECCheckMOVCondition(const E: IGFpECC; RaiseException: Boolean = False): TECState; overload;
-procedure NSwp(var A,B: IGFpEC); overload;
-function  NSet(var A: I2Point; const X: IInteger; YIsOdd: Boolean; const E: IGFpEC): TECState; overload;
-procedure NSet(var A: IGFpEC;  const B: IGFpEC); overload;
-procedure NSet(var A: IInteger; const B: I2Point); overload;
-function  NSet(var A: I2Point; const B: IInteger; const E: IGFpEC): TECState; overload;
-function  NAdd(var A: I2Point; const B: I2Point; const E: IGFpEC): Boolean; overload;
-function  NSub(var A: I2Point; const B: I2Point; const E: IGFpEC): Boolean; overload;
-function  NMul(var A: I2Point; const B: IInteger; const E: IGFpEC; const P: IGFpMulPrecomputation = nil): Boolean; overload;
-function  NMul(var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC; const P: IGFpMulPrecomputation = nil): Boolean; overload;
-function  NMul2k(var A: I2Point; K: Cardinal; const E: IGFpEC; const P: IGFpMulPrecomputation = nil): Boolean; overload;
-function  NMul2k(var A: I2Point; const B: I2Point; K: Cardinal; const E: IGFpEC; const P: IGFpMulPrecomputation = nil): Boolean; overload;
-function  NInv(var A: I2Point; const E: IGFpEC): Boolean; overload;
-procedure NRnd(var A: I2Point; const E: IGFpEC); overload;
-procedure NRnd(var E: IGFpEC; FieldBitSize: Integer = 168); overload;
+function  NECCheckMOVCondition               (const E: IGFpECC; RaiseException: Boolean = False): TECState; overload;
+procedure NSwp  (var A, B: IGFpEC); overload;
+function  NSet  (var A: I2Point;  const X: IInteger; YIsOdd: Boolean;  const E: IGFpEC): TECState; overload;
+procedure NSet  (var A: IGFpEC;   const B: IGFpEC);  overload;
+procedure NSet  (var A: IInteger; const B: I2Point); overload;
+function  NSet  (var A: I2Point;  const B: IInteger;                   const E: IGFpEC): TECState; overload;
+function  NAdd  (var A: I2Point;  const B: I2Point;                    const E: IGFpEC): Boolean; overload;
+function  NSub  (var A: I2Point;  const B: I2Point;                    const E: IGFpEC): Boolean; overload;
+function  NMul  (var A: I2Point;  const B: IInteger;                   const E: IGFpEC; const P: IGFpMulPrecomputation = nil): Boolean; overload;
+function  NMul  (var A: I2Point;  const B: I2Point; const C: IInteger; const E: IGFpEC; const P: IGFpMulPrecomputation = nil): Boolean; overload;
+function  NMul2k(var A: I2Point;                   K: Cardinal;        const E: IGFpEC; const P: IGFpMulPrecomputation = nil): Boolean; overload;
+function  NMul2k(var A: I2Point; const B: I2Point; K: Cardinal;        const E: IGFpEC; const P: IGFpMulPrecomputation = nil): Boolean; overload;
+function  NInv  (var A: I2Point; const E: IGFpEC): Boolean; overload;
+procedure NRnd  (var A: I2Point; const E: IGFpEC); overload;
+procedure NRnd  (                  var E: IGFpEC; FieldBitSize: Integer = 168); overload;
 function  NEmpty(const A: I2Point): Boolean; overload;
 function  NEmpty(const A: I3Point): Boolean; overload;
 // modified Brickell's precomputation for mul
-procedure NSet(var P: IGFpMulPrecomputation; const B: I2Point; const E: IGFpEC; CMaxBitSize: Integer); overload;
+procedure NSet   (var P: IGFpMulPrecomputation; const B: I2Point; const E: IGFpEC; CMaxBitSize: Integer); overload;
 procedure NSave(const P: IGFpMulPrecomputation; Stream: TStream); overload;
-procedure NLoad(var P: IGFpMulPrecomputation; Stream: TStream); overload;
+procedure NLoad  (var P: IGFpMulPrecomputation; Stream: TStream); overload;
 
 {$DEFINE Test_Mul}
 {$IFDEF Test_Mul}
-function NMul_MontPB(var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC): Boolean;
-function NMul_Affine(var A: I2Point; const B: I2Point; C: IInteger; const E: IGFpEC): Boolean;
-function NMul_Proj(var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC): Boolean;
-function NMul2k_Normal(var A: I2Point; const B: I2Point; K: Cardinal; const E: IGFpEC): Boolean;
-function NMul2k_Mont(var A: I2Point; const B: I2Point; K: Cardinal; const E: IGFpEC): Boolean;
+function NMul_MontPB  (var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC): Boolean;
+function NMul_Affine  (var A: I2Point; const B: I2Point;       C: IInteger; const E: IGFpEC): Boolean;
+function NMul_Proj    (var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC): Boolean;
+function NMul2k_Normal(var A: I2Point; const B: I2Point;       K: Cardinal; const E: IGFpEC): Boolean;
+function NMul2k_Mont  (var A: I2Point; const B: I2Point;       K: Cardinal; const E: IGFpEC): Boolean;
 {$ENDIF}
 
 

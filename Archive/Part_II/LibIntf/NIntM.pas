@@ -33,18 +33,18 @@ type
     O: Cardinal; // One in Normal or Montgomery Domain
   end;
 
-procedure NSet(var M: IModulus; Modulus: Cardinal); overload;
-function  NSet(A: Cardinal; const M: IModulus): Cardinal; overload;
-function  NGet(A: Cardinal; const M: IModulus): Cardinal; overload;
-function  NAddMod(A,B: Cardinal; const M: IModulus): Cardinal; overload;
-function  NSubMod(A,B: Cardinal; const M: IModulus): Cardinal; overload;
-function  NMulMod(A,B: Cardinal; const M: IModulus): Cardinal; overload;
-function  NPowMod(A,E: Cardinal; const M: IModulus): Cardinal; overload;
-function  NSqrtMod(A: Cardinal; const M: IModulus): Cardinal; overload;
-function  NSqrtMod(A,P: Cardinal): Cardinal; overload;
-function  NInvMod(A,M: Cardinal): Cardinal; overload;
-function  NMulMod(A,B,M: Cardinal): Cardinal; overload;
-function  NAddMod(A,B,M: Cardinal): Cardinal; overload;
-function  NSubMod(A,B,M: Cardinal): Cardinal; overload;
+procedure NSet   (var M: IModulus; Modulus: Cardinal); overload;
+function  NSet    (A:    Cardinal; const M: IModulus): Cardinal; overload;
+function  NGet    (A:    Cardinal; const M: IModulus): Cardinal; overload;
+function  NAddMod (A, B: Cardinal; const M: IModulus): Cardinal; overload;
+function  NSubMod (A, B: Cardinal; const M: IModulus): Cardinal; overload;
+function  NMulMod (A, B: Cardinal; const M: IModulus): Cardinal; overload;
+function  NPowMod (A, E: Cardinal; const M: IModulus): Cardinal; overload;
+function  NSqrtMod(A:    Cardinal; const M: IModulus): Cardinal; overload;
+function  NSqrtMod(A, P: Cardinal):    Cardinal; overload;
+function  NInvMod (A,    M: Cardinal): Cardinal; overload;
+function  NMulMod (A, B, M: Cardinal): Cardinal; overload;
+function  NAddMod (A, B, M: Cardinal): Cardinal; overload;
+function  NSubMod (A, B, M: Cardinal): Cardinal; overload;
 
 

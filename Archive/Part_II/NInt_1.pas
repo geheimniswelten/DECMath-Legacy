@@ -28,32 +28,32 @@ type
   TCFEFunc = function(Index: Integer): Integer; register;
   TIIntegerPIMethod = (piFastChudnovsky, piIterChudnovsky, piAGM, piFastMachin, piIterMachin);
 
-procedure NCFE(var P,Q: IInteger; CFEFunc: TCFEFunc; Last: Integer);
+procedure NCFE(var P, Q: IInteger; CFEFunc: TCFEFunc; Last: Integer);
 
 function  CFE_Euler(Index: Integer): Integer;
 function  CFE_GoldenRatio(Index: Integer): Integer;
 function  CFE_Tan1(Index: Integer): Integer;
 
-procedure NLn2(var R: IInteger);
-procedure NLn10(var R: IInteger);
-procedure NArcTan(var R: IInteger; const U,V: IInteger); overload;
-procedure NArcTan(var R: IInteger; V: Integer); overload;
-procedure NArcTanh(var R: IInteger; const V: IInteger);
-procedure NSin(var R: IInteger; const U,V: IInteger);
-procedure NSinh(var R: IInteger; const U,V: IInteger);
-procedure NCos(var R: IInteger; const U,V: IInteger);
-procedure NCosh(var R: IInteger; const U,V: IInteger);
-procedure NTan(var R: IInteger; const U,V: IInteger);
-procedure NTanh(var R: IInteger; const U,V: IInteger);
-procedure NExp(var A: IInteger; U: Integer = 1; V: Integer = 1); overload;
-procedure NExp(var A: IInteger; const U,V: IInteger); overload;
-function  NPi(var A: IInteger; Decimals: Cardinal; Method: TIIntegerPIMethod = piFastChudnovsky): Cardinal;
+procedure NLn2    (var R: IInteger);
+procedure NLn10   (var R: IInteger);
+procedure NArcTan (var R: IInteger; const U, V: IInteger); overload;
+procedure NArcTan (var R: IInteger;          V: Integer);  overload;
+procedure NArcTanh(var R: IInteger; const    V: IInteger);
+procedure NSin    (var R: IInteger; const U, V: IInteger);
+procedure NSinh   (var R: IInteger; const U, V: IInteger);
+procedure NCos    (var R: IInteger; const U, V: IInteger);
+procedure NCosh   (var R: IInteger; const U, V: IInteger);
+procedure NTan    (var R: IInteger; const U, V: IInteger);
+procedure NTanh   (var R: IInteger; const U, V: IInteger);
+procedure NExp    (var A: IInteger; U: Integer = 1; V: Integer = 1); overload;
+procedure NExp    (var A: IInteger; const U, V: IInteger); overload;
+function  NPi     (var A: IInteger; Decimals: Cardinal; Method: TIIntegerPIMethod = piFastChudnovsky): Cardinal;
 
 procedure NFactorial1(var A: IInteger; N: Cardinal);
 
 implementation
 
-procedure NCFE(var P,Q: IInteger; CFEFunc: TCFEFunc; Last: Integer);
+procedure NCFE(var P, Q: IInteger; CFEFunc: TCFEFunc; Last: Integer);
 // continued fraction expansion
 var
   I: Integer;
@@ -72,9 +72,12 @@ end;
 function CFE_Euler(Index: Integer): Integer;
 // can be checked via NExp(.., 1, 1)
 begin
-  if Index = 0 then Result := 2 else
-    if Index mod 3 <> 2 then Result := 1
-      else Result := ((Index + 1) div 3) shl 1;
+  if Index = 0 then
+    Result := 2
+  else if Index mod 3 <> 2 then
+    Result := 1
+  else
+    Result := ((Index + 1) div 3) shl 1;
 end;
 
 function CFE_GoldenRatio(Index: Integer): Integer;
@@ -84,14 +87,16 @@ end;
 
 function CFE_Tan1(Index: Integer): Integer;
 begin
-  if Odd(Index) then Result := Index
-    else Result := 1;
+  if Odd(Index) then
+    Result := Index
+  else
+    Result := 1;
 end;
 {
 procedure NLn2(var R: IInteger);
 // R = R * Ln(2), = 2 * arctanh(1/3)
 var
-  S,T: IInteger;
+  S, T: IInteger;
   K: Cardinal;
 begin
   K := 1;
@@ -112,7 +117,7 @@ procedure NLn2(var R: IInteger);
 // R = R * Ln(2)
 //   = R * 144 * arctanh(1/251) + 54 * arctanh(1/449) - 38 * arctanh(1/4801) + 62 * arctanh(1/8749)
 var
-  A,B: IInteger;
+  A, B: IInteger;
 begin
   NShl(R, 32); // 1 digit rounding
   NMul(A, R, 144); NArcTanh(A, NInt( 251));
@@ -126,7 +131,7 @@ procedure NLn10(var R: IInteger);
 // R = R * Ln(10)
 //   = R * 478 * arctanh(1/251) + 180 * arctanh(1/449) - 126 * arctanh(1/4801) + 206 * arctanh(1/8749)
 var
-  A,B: IInteger;
+  A, B: IInteger;
 begin
   NShl(R, 32); // 1 digit rounding
   NMul(A, R, 478); NArcTanh(A, NInt( 251));
@@ -140,26 +145,28 @@ procedure NArcTanh(var R: IInteger; const V: IInteger);
 // R = R * arctanh(1 / V)
 // binary splitting adaption of Jörg Arndt's formulas
 
-// method 1: arctanh(1 / V) = sum[n=0..inf] 1 / (2n +1) * 1 / V^(2n +1)
-// method 2: arctanh(1 / V) = sum[n=0..inf] (-4)^n*n!^2 / (2n +1)! * V / (V^2 -1)^(n +1)
+// method 1: arctanh(1 / V) = sum[n=0..inf] 1 / (2n + 1) * 1 / V^(2n + 1)
+// method 2: arctanh(1 / V) = sum[n=0..inf] (-4)^n*n!^2 / (2n + 1)! * V / (V^2 - 1)^(n + 1)
 var
   S: IInteger;
 
   procedure DoAtanh1(N: Integer; var D: TIIntegerSplitData);
   // 1. method, S = V^2
   begin
-    NSet(D.B, N + N +1);
-    if N > 0 then D.Q := S       // we assign here instead of use of NSet(Q, S)
-      else D.Q := V;             // this save memory and speedup by "copy on demand"
+    NSet(D.B, N + N + 1);
+    if N > 0 then
+      D.Q := S   // we assign here instead of use of NSet(Q, S)
+    else
+      D.Q := V;  // this save memory and speedup by "copy on demand"
   end;
 
   procedure DoAtanh2(N: Integer; var D: TIIntegerSplitData);
-  // 2. method, S = V^2 -1
+  // 2. method, S = V^2 - 1
   begin
     if N > 0 then
     begin
       NSet(D.P, -(N + N));
-      NMul(D.Q, S, N + N +1);
+      NMul(D.Q, S, N + N + 1);
     end else
     begin
       D.P := V;
@@ -169,14 +176,14 @@ var
 
 var
   L: Integer;
-  P,Q: IInteger;
+  P, Q: IInteger;
 begin
   if NSgn(R) <> 0 then
   begin
     NSqr(S, V);
     NDec(S, 1); // comment out for method 1
     Assert(NSgn(S) > 0, 'NArcTanh(), require V > 1');
-    L := Round(NLn(R) / NLn(S)) +1;
+    L := Round(NLn(R) / NLn(S)) + 1;
     NBinarySplitting(P, Q, L, @DoAtanh2);
     NMul(R, P);
     NDiv(R, Q);
@@ -188,8 +195,8 @@ procedure NArcTan(var R: IInteger; N: Integer);
 // R = R * ArcTan(1 / N)
 // iterative version
 var
-  K,V: Integer;
-  S,T: IInteger;
+  K, V: Integer;
+  S, T: IInteger;
 begin
   K := 0;
   V := N * N;
@@ -205,20 +212,20 @@ begin
   end;
 end; *)
 
-procedure NArcTan(var R: IInteger; const U,V: IInteger); overload;
+procedure NArcTan(var R: IInteger; const U, V: IInteger); overload;
 // R = R * arctan(U / V)
 // binary splitting adaption of Jörg Arndt's formulas
 
-// method 1: arctan(U / V) = sum[n=0..inf] (-1)^n / (2n +1) * U / V^(2n +1)
-// method 2: arctan(1 / V) = sum[n=0..inf] 4^n * n!^2 / (2n +1)! * V / (V^2 +1)^(n +1)
+// method 1: arctan(U / V) = sum[n=0..inf] (-1)^n / (2n + 1) * U / V^(2n + 1)
+// method 2: arctan(1 / V) = sum[n=0..inf] 4^n * n!^2 / (2n + 1)! * V / (V^2 + 1)^(n + 1)
 
 var
-  sV,sU: IInteger;
+  sV, sU: IInteger;
 
   procedure DoAtan1(N: Integer; var D: TIIntegerSplitData);
   // 1. method, S = V^2
   begin
-    NSet(D.B, N + N +1);
+    NSet(D.B, N + N + 1);
     NNeg(D.B, Odd(N));
     if N > 0 then
     begin
@@ -232,12 +239,12 @@ var
   end;
 
   procedure DoAtan2(N: Integer; var D: TIIntegerSplitData);
-  // 2. method, S = V^2 +1
+  // 2. method, S = V^2 + 1
   begin
     if N > 0 then
     begin
       NSet(D.P, N + N);
-      NMul(D.Q, sV, N + N +1);
+      NMul(D.Q, sV, N + N + 1);
     end else
     begin
       D.P := V;
@@ -246,24 +253,25 @@ var
   end;
 
 resourcestring
-  sNArcTan = 'NArcTan(), require U <> 0 and |U| < |V|';
+  sNArcTanUV = 'NArcTan(), require U <> 0 and |U| < |V|';
 var
-  P,Q: IInteger;
+  P, Q: IInteger;
   L: Extended;
 begin
-  if (NSgn(U) = 0) or (NCmp(U, V, True) >= 0) then NRaise(@sNArcTan);
+  if (NSgn(U) = 0) or (NCmp(U, V, True) >= 0) then
+    NRaise(@sNArcTanUV);
   if NSgn(R) <> 0 then
   begin
     NSqr(sV, V);
     if Abs(NSgn(U, True)) <> 1 then
     begin
       NSqr(sU, U);
-      L := NSize(R) / Abs(NLn(sU) - NLn(sV)) +1;
+      L := NSize(R) / Abs(NLn(sU) - NLn(sV)) + 1;
       NBinarySplitting(P, Q, Round(L), @DoAtan1);
     end else
     begin
       NInc(sV);
-      L := NSize(R) / NLn(sV) +1;
+      L := NSize(R) / NLn(sV) + 1;
       NBinarySplitting(P, Q, Round(L), @DoAtan2);
     end;
     NMul(R, P);
@@ -275,7 +283,7 @@ procedure NArcTan(var R: IInteger; V: Integer); overload;
 // R = R * arctan(1 / V)
 // binary splitting adaption of Jörg Arndt's formulas
 
-// method: arctan(1 / V) = sum[n=0..inf] 4^n * n!^2 / (2n +1)! * V / (V^2 +1)^(n +1)
+// method: arctan(1 / V) = sum[n=0..inf] 4^n * n!^2 / (2n + 1)! * V / (V^2 + 1)^(n + 1)
 var
   S: Int64;
 
@@ -296,39 +304,40 @@ var
   end;
 
 resourcestring
-  sNArcTan = 'NArcTan(), require V <> 0';
+  sNArcTanV = 'NArcTan(), require V <> 0';
 var
-  P,Q: IInteger;
+  P, Q: IInteger;
   L: Extended;
 begin
-  if V = 0 then NRaise(@sNArcTan);
+  if V = 0 then
+    NRaise(@sNArcTanV);
   if NSgn(R) <> 0 then
   begin
-    S := Int64(V) * Int64(V) + 1; // avoid D4 Bug for S := V * V +1 !!
+    S := Int64(V) * Int64(V) + 1; // avoid D4 Bug for S := V * V + 1 !!
     Assert(S > 0);
     L := S;
-    L := NLn(R) / Ln(L) +1;
+    L := NLn(R) / Ln(L) + 1;
     NBinarySplitting(P, Q, Round(L), @DoAtan);
     NMul(R, P);
     NDiv(R, Q);
   end;
 end;
 
-procedure NSin(var R: IInteger; const U,V: IInteger);
+procedure NSin(var R: IInteger; const U, V: IInteger);
 // R = R * sin(U / V)
 var
-  sU,sV: IInteger;
+  sU, sV: IInteger;
 
   procedure DoSIN(N: Integer; var D: TIIntegerSplitData); register;
   begin
     if N > 0 then
     begin
-      D.P := sU;                         // -U^2
-      NSet(D.Q, Int64(N * (N + N +1)));  // 2V^2 * (2n^2 +n)             n(2n +1)
+      D.P := sU;                          // -U^2
+      NSet(D.Q, Int64(N * (N + N + 1)));  // 2V^2 * (2n^2 + n)             n(2n + 1)
       NMul(D.Q, sV);
     end else
     begin
-      NSet(D.P, U);                    // (-1)^n * x^(2n + 1) / (2n + 1)!
+      NSet(D.P, U);                       // (-1)^n * x^(2n + 1) / (2n + 1)!
       NSet(D.Q, V);
     end;
   end;
@@ -336,10 +345,11 @@ var
 resourcestring
   sNSin = 'NSin(), requiere V <> 0 and U <> 0';
 var
-  P,Q: IInteger;
-  C,D,L: Extended;
+  P, Q: IInteger;
+  C, D, L: Extended;
 begin
-  if (NSgn(V) = 0) or (NSgn(U) = 0) then NRaise(@sNSin);
+  if (NSgn(V) = 0) or (NSgn(U) = 0) then
+    NRaise(@sNSin);
   if NSgn(R) <> 0 then
   begin
     NSqr(sU, U);
@@ -351,7 +361,7 @@ begin
     L := 1;
     while D > 0 do
     begin
-      D := D + C - Ln(L * (L + L +1));
+      D := D + C - Ln(L * (L + L + 1));
       L := L + 1;
     end;
     NNeg(sU);
@@ -361,32 +371,33 @@ begin
   end;
 end;
 
-procedure NSinh(var R: IInteger; const U,V: IInteger);
+procedure NSinh(var R: IInteger; const U, V: IInteger);
 // R = R * sinh(U / V)
 var
-  sU,sV: IInteger;
+  sU, sV: IInteger;
 
   procedure DoSINH(N: Integer; var D: TIIntegerSplitData); register;
   begin
     if N > 0 then
     begin
-      D.P := sU;                         // -U^2
-      NSet(D.Q, Int64(N * (N + N +1)));  // 2V^2 * (2n^2 +n)
+      D.P := sU;                          // -U^2
+      NSet(D.Q, Int64(N * (N + N + 1)));  // 2V^2 * (2n^2 + n)
       NMul(D.Q, sV);
     end else
     begin
-      NSet(D.P, U);                      //  U
-      NSet(D.Q, V);                      //  V
+      NSet(D.P, U);                       //  U
+      NSet(D.Q, V);                       //  V
     end;
   end;
 
 resourcestring
   sNSinh = 'NSinh(), requiere V <> 0 and U <> 0';
 var
-  P,Q: IInteger;
-  C,D,L: Extended;
+  P, Q: IInteger;
+  C, D, L: Extended;
 begin
-  if (NSgn(V) = 0) or (NSgn(U) = 0) then NRaise(@sNSinh);
+  if (NSgn(V) = 0) or (NSgn(U) = 0) then
+    NRaise(@sNSinh);
   if NSgn(R) <> 0 then
   begin
     NSqr(sU, U);
@@ -398,7 +409,7 @@ begin
     L := 1;
     while D > 0 do
     begin
-      D := D + C - Ln(L * (L + L +1));
+      D := D + C - Ln(L * (L + L + 1));
       L := L + 1;
     end;
     NBinarySplitting(P, Q, Round(L), @DoSINH);  // P / Q = Sin(U / V)
@@ -407,17 +418,17 @@ begin
   end;
 end;
 
-procedure NCos(var R: IInteger; const U,V: IInteger);
+procedure NCos(var R: IInteger; const U, V: IInteger);
 // R = R * cos(U / V)
 var
-  sU,sV: IInteger;
+  sU, sV: IInteger;
 
   procedure DoCOS(N: Integer; var D: TIIntegerSplitData); register;
   begin
     if N > 0 then
     begin
       D.P := sU;                         // -U^2
-      NSet(D.Q, Int64(N * (N + N - 1))); //  2V^2 * (2n^2 -n)
+      NSet(D.Q, Int64(N * (N + N - 1))); //  2V^2 * (2n^2 - n)
       NMul(D.Q, sV);
     end;
   end;
@@ -425,10 +436,11 @@ var
 resourcestring
   sNCos = 'NCos(), requiere V <> 0 and U <> 0';
 var
-  P,Q: IInteger;
-  C,D,L: Extended;
+  P, Q: IInteger;
+  C, D, L: Extended;
 begin
-  if (NSgn(V) = 0) or (NSgn(U) = 0) then NRaise(@sNCos);
+  if (NSgn(V) = 0) or (NSgn(U) = 0) then
+    NRaise(@sNCos);
   if NSgn(R) <> 0 then
   begin
     NSqr(sU, U);
@@ -440,7 +452,7 @@ begin
     L := 1;
     while D > 0 do
     begin
-      D := D + C - Ln(L * (L + L +1));
+      D := D + C - Ln(L * (L + L + 1));
       L := L + 1;
     end;
     NNeg(sU);
@@ -450,17 +462,17 @@ begin
   end;
 end;
 
-procedure NCosh(var R: IInteger; const U,V: IInteger);
+procedure NCosh(var R: IInteger; const U, V: IInteger);
 // R = R * cosh(U / V)
 var
-  sU,sV: IInteger;
+  sU, sV: IInteger;
 
   procedure DoCOSH(N: Integer; var D: TIIntegerSplitData); register;
   begin
     if N > 0 then
     begin
       D.P := sU;                         // -U^2
-      NSet(D.Q, Int64(N * (N + N - 1))); //  2V^2 * (2n^2 -n)
+      NSet(D.Q, Int64(N * (N + N - 1))); //  2V^2 * (2n^2 - n)
       NMul(D.Q, sV);
     end;
   end;
@@ -468,10 +480,11 @@ var
 resourcestring
   sNCosh = 'NCosh(), requiere V <> 0 and U <> 0';
 var
-  P,Q: IInteger;
-  C,D,L: Extended;
+  P, Q: IInteger;
+  C, D, L: Extended;
 begin
-  if (NSgn(V) = 0) or (NSgn(U) = 0) then NRaise(@sNCosh);
+  if (NSgn(V) = 0) or (NSgn(U) = 0) then
+    NRaise(@sNCosh);
   if NSgn(R) <> 0 then
   begin
     NSqr(sU, U);
@@ -483,7 +496,7 @@ begin
     L := 1;
     while D > 0 do
     begin
-      D := D + C - Ln(L * (L + L +1));
+      D := D + C - Ln(L * (L + L + 1));
       L := L + 1;
     end;
     NBinarySplitting(P, Q, Round(L), @DoCOSH);  // P / Q = Sin(U / V)
@@ -492,7 +505,7 @@ begin
   end;
 end;
 
-procedure NTan(var R: IInteger; const U,V: IInteger);
+procedure NTan(var R: IInteger; const U, V: IInteger);
 // R = R * tan(U / V)
 // todo: implement a direct binary splitting
 // computation of NTan(R, 1, 1) can be checked with NCFE(.., .., CFETan1, ...);
@@ -507,7 +520,7 @@ begin
   NShr(R, 32);
 end;
 
-procedure NTanh(var R: IInteger; const U,V: IInteger);
+procedure NTanh(var R: IInteger; const U, V: IInteger);
 // R = R * tanh(U / V)
 var
   A: IInteger;
@@ -520,7 +533,7 @@ begin
   NShr(R, 32);
 end;
 
-procedure NExp(var A: IInteger; U,V: Integer);
+procedure NExp(var A: IInteger; U, V: Integer);
 // A = A * e^(U / V)
 
   procedure DoExp(N: Integer; var D: TIIntegerSplitData); register;
@@ -538,14 +551,15 @@ procedure NExp(var A: IInteger; U,V: Integer);
   procedure DoExp1(N: Integer; var D: TIIntegerSplitData); register;
   // A[n] = 1, B[1] = 1, P[0] = 1, Q[0] = 1, P[n] = 1 if n > 0, Q[n] = n if n > 0
   begin
-    if N > 0 then NSet(D.Q, N);
+    if N > 0 then
+      NSet(D.Q, N);
   end;
 
 resourcestring
   sNExp = 'NExp(), invalid Parameters';
 var
-  D,C,L: Extended;
-  P,Q: IInteger;
+  D, C, L: Extended;
+  P, Q: IInteger;
   S: Integer;
 begin
   if NSgn(A) <> 0 then
@@ -565,8 +579,10 @@ begin
         NRaise(@sNExp, E.Message);
     end;
   // do binary splitting, exp(U / V) = P / Q
-    if (U = 1) and (V = 1) then S := NBinarySplitting(P, Q, Round(L), @DoExp1, False)
-      else S := NBinarySplitting(P, Q, Round(L), @DoExp, False);
+    if (U = 1) and (V = 1) then
+      S := NBinarySplitting(P, Q, Round(L), @DoExp1, False)
+    else
+      S := NBinarySplitting(P, Q, Round(L), @DoExp, False);
   // finalization
     NShr(A, S);
     NMul(A, P);
@@ -574,7 +590,7 @@ begin
   end;
 end;
 
-procedure NExp(var A: IInteger; const U,V: IInteger);
+procedure NExp(var A: IInteger; const U, V: IInteger);
 // A = A * e^(U / V)
 
   procedure DoExp(N: Integer; var D: TIIntegerSplitData); register;
@@ -592,8 +608,8 @@ procedure NExp(var A: IInteger; const U,V: IInteger);
 resourcestring
   sNExp = 'NExp(), invalid Parameters';
 var
-  D,C,L: Extended;
-  P,Q: IInteger;
+  D, C, L: Extended;
+  P, Q: IInteger;
 begin
   if NSgn(A) <> 0 then
   begin
@@ -644,19 +660,20 @@ Decimals :    Chud(fast)   Chud(iter)          AGM Machin(fast) Machin(Iter)    
   procedure NPi_Iter_Machin(var R: IInteger; Decimals: Cardinal);
   // Machin's Arctan series, iterative method
 
-    procedure AddArcTan(var R,P: IInteger; X,M: Integer);
+    procedure AddArcTan(var R, P: IInteger; X, M: Integer);
     var
-      N,D: IInteger;
+      N, D: IInteger;
       K: Cardinal;
     begin
       NMul(N, P, X * M);
-      X := X * X +1;
+      X := X * X + 1;
       NSet(D, X);
       X := X + X;
       K := 0;
       repeat
         NDiv(N, D);
-        if NSgn(N) = 0 then Break;
+        if NSgn(N) = 0 then
+          Break;
         Inc(K, 2);
         NAdd(R, N);
         NMul(N, K);
@@ -685,14 +702,14 @@ Decimals :    Chud(fast)   Chud(iter)          AGM Machin(fast) Machin(Iter)    
 
     procedure NArcTanSeries(var R: IInteger; const S: array of Integer);
     var
-      P,T: IInteger;
+      P, T: IInteger;
       I: Integer;
     begin
       NShl(R, 32);
       I := 0;
       repeat
         NSet(P, R);
-        NArcTan(P, S[I +1]);
+        NArcTan(P, S[I + 1]);
         NMul(P, S[I + 0]);
         NAdd(T, P);
         Inc(I, 2);
@@ -726,12 +743,12 @@ Decimals :    Chud(fast)   Chud(iter)          AGM Machin(fast) Machin(Iter)    
    s = s^2
    t = t - d * 2^k
    b = Sqrt(s - d)
-   k = k +1
+   k = k + 1
 
  final:
    pi ~ (a + b)^2 / 2t }
   var
-    A,B,D,T: IInteger;
+    A, B, D, T: IInteger;
     W: Integer;
   begin
 (*
@@ -760,7 +777,7 @@ Decimals :    Chud(fast)   Chud(iter)          AGM Machin(fast) Machin(Iter)    
     Inc(Decimals, 3);           // +3 digits reserve
     NPow(R, 5, Decimals);       // R =  5^Decimals
     NShl(A, R, Decimals);       // A = 10^Decimals
-    NShl(D, R, Decimals -1);    // D = 10^(Decimals -1)^2
+    NShl(D, R, Decimals -1);    // D = 10^(Decimals - 1)^2
     NSqr(D);
     NSqr(B, A);                 // B = (10^Decimals^2 * 2)^0.5 div 2
     NShl(B, 1);
@@ -800,7 +817,7 @@ Decimals :    Chud(fast)   Chud(iter)          AGM Machin(fast) Machin(Iter)    
     k_2 = 327843840;
   var
     N: Integer;
-    P,S,T: IInteger;
+    P, S, T: IInteger;
   begin
     NPow(T, 10, Decimals + 6);        // T = 10^Deciamls * 10^6  --> +6 Digit correction
     NSqr(R, T);                       // R = 53360 * Sqrt(640320 * T^2)
@@ -815,9 +832,9 @@ Decimals :    Chud(fast)   Chud(iter)          AGM Machin(fast) Machin(Iter)    
     N := 1;
     while NSgn(T) > 0 do
     begin
-      NSet(S, 6 * N -5); // T = T * (6n -5)(6n -3)(6n -1)
-      NMul(S, 6 * N -3);
-      NMul(S, 6 * N -1);
+      NSet(S, 6 * N - 5); // T = T * (6n - 5)(6n - 3)(6n - 1)
+      NMul(S, 6 * N - 3);
+      NMul(S, 6 * N - 1);
       NMul(T, S);
 
       NPow(S, N, 3);     // T = T / n^3 * 32817176580096000
@@ -868,7 +885,7 @@ q(n) = (3n-2)(3n-1)(3n)(n^3)(C^3)
     // the callback for binary splitting
     // max. n < ~306783379 then 6n << MaxInt
     // B[1] = 1, P[0] = 1, Q[0] = 1
-    // don't touch B,P[0],Q[0] because NIL interfaces are here assumed to value +1
+    // don't touch B, P[0], Q[0] because NIL interfaces are here assumed to value +1
     begin
       if N > 0 then
       begin
@@ -876,9 +893,9 @@ q(n) = (3n-2)(3n-1)(3n)(n^3)(C^3)
         NMul(D.A, N);
         NAdd(D.A, k_A);
 
-        NSet(D.P,   2 * N -1 );
-        NMul(D.P,   6 * N -1 );
-        NMul(D.P, -(6 * N -5));          // p = - (6*n -5) * (6*n -1)* (2*n -1)
+        NSet(D.P,   2 * N - 1);
+        NMul(D.P,   6 * N - 1);
+        NMul(D.P, -(6 * N - 5));         // p = - (6*n - 5) * (6*n - 1)* (2*n - 1)
 
         NSet(D.Q, k_C);                  // q = 72(n * k_C)^3      // 72 * n^3 * k_C^3
         NMul(D.Q, N);
@@ -889,10 +906,10 @@ q(n) = (3n-2)(3n-1)(3n)(n^3)(C^3)
     end;
 
   var
-    P,Q: IInteger;
+    P, Q: IInteger;
     S: Cardinal;
   begin
-    S := Trunc(Decimals / 14.181) +2;
+    S := Trunc(Decimals / 14.181) + 2;
     S := NBinarySplitting(P, Q, S, @DoPI, False);  // decimal approximation is very roughly !!
     NPow(R, 100, Decimals);
     NMul(R, NInt(k_E));
@@ -924,18 +941,18 @@ q(n) = (3n-2)(3n-1)(3n)(n^3)(C^3)
       NMul(D.Q, (k_C div 2) * (k_C div 2));
       NMul(D.Q, k_C * 12 * 12 * 2);
 
-      NSet(D.P, N + N -1);
+      NSet(D.P, N + N - 1);
       N := N * 6;
-      NMul(D.P, N -1);
-      NMul(D.P, N -5);
+      NMul(D.P, N - 1);
+      NMul(D.P, N - 5);
     end;
 
   var
-    P,Q: IInteger;
+    P, Q: IInteger;
     S: Cardinal;
   begin
     Inc(Decimals, 3);
-    S := NBinarySplitting(P, Q, Trunc(Decimals / 14.181) +2, @DoPI, False);  // decimal approximation is very roughly !!
+    S := NBinarySplitting(P, Q, Trunc(Decimals / 14.181) + 2, @DoPI, False);  // decimal approximation is very roughly !!
 // R := (10^(Decimals*2) * 12 * k_C)^0.5 * k_C * Q / (P + Q * k_A)
     NMul(R, Q, k_A);
     NShl(R, S);
@@ -979,7 +996,8 @@ procedure NFactorial1(var A: IInteger; N: Cardinal);
   //  NBinarySplitting() and it callback's assumed for P,Q,A,B always 1 if these vars are nil !
   //  That produce readable code such as follow and improve speed and reduce memory usage.
   begin
-    if N > 0 then NSet(D.Q, N);
+    if N > 0 then
+      NSet(D.Q, N);
   end;
 
 var
@@ -996,3 +1014,4 @@ begin
 end;
 
 end.
+

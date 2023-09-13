@@ -76,7 +76,7 @@ type
     function Count(LowerBound, UpperBound: Cardinal): Cardinal; // compute Primecount beetwen Bounds
     function IndexOf(Value: Cardinal; LowerBound: Boolean{$IFDEF VER_D4H} = False{$ENDIF}): Cardinal; // give Primeindex of Value
 
-    procedure LoadCache(const FileName: String); // load a Prime Cache
+    procedure LoadCache (const FileName: String); // load a Prime Cache
     procedure BuildCache(const FileName: String; Bound: Cardinal); // create and save a Cache
 
     property Prime[Index: Cardinal]: Cardinal read GetPrime; default; // return Prime with Index

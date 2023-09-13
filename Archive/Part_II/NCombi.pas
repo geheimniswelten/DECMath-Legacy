@@ -28,25 +28,25 @@ interface
 
 uses NInts;
 
-procedure NFactorial_Moessner(var A: IInteger; N: Cardinal);
-procedure NFactorial_Naive(var A: IInteger; N: Cardinal);
-procedure NFactorial_Recursive(var A: IInteger; N: Cardinal);
+procedure NFactorial_Moessner        (var A: IInteger; N: Cardinal);
+procedure NFactorial_Naive           (var A: IInteger; N: Cardinal);
+procedure NFactorial_Recursive       (var A: IInteger; N: Cardinal);
 procedure NFactorial_DivideAndConquer(var A: IInteger; N: Cardinal);
-procedure NFactorial_Binomial(var A: IInteger; N: Cardinal);
-procedure NFactorial_Jason_GMP(var A: IInteger; N: Cardinal);
+procedure NFactorial_Binomial        (var A: IInteger; N: Cardinal);
+procedure NFactorial_Jason_GMP       (var A: IInteger; N: Cardinal);
 
-procedure NFactorial(var A: IInteger; N: Cardinal; const M: IInteger = nil); overload;
-procedure NComporial(var A: IInteger; N: Cardinal; const M: IInteger = nil); overload;
-procedure NBinomial(var A: IInteger; N,K: Cardinal; const M: IInteger = nil); overload;
-procedure NProduct(var A: IInteger; N,K: Cardinal; const M: IInteger = nil); overload;
-procedure NPermutation(var A: IInteger; N,K: Cardinal; const M: IInteger = nil); overload;
-function  NOddFactorial(var A: IInteger; N: Cardinal; const M: IInteger = nil): Cardinal; overload;
-procedure NPrimorial(var A: IInteger; K,N: Cardinal; const M: IInteger = nil); overload;
+procedure NFactorial   (var A: IInteger; N:    Cardinal; const M: IInteger = nil); overload;
+procedure NComporial   (var A: IInteger; N:    Cardinal; const M: IInteger = nil); overload;
+procedure NBinomial    (var A: IInteger; N, K: Cardinal; const M: IInteger = nil); overload;
+procedure NProduct     (var A: IInteger; N, K: Cardinal; const M: IInteger = nil); overload;
+procedure NPermutation (var A: IInteger; N, K: Cardinal; const M: IInteger = nil); overload;
+function  NOddFactorial(var A: IInteger; N:    Cardinal; const M: IInteger = nil): Cardinal; overload;
+procedure NPrimorial   (var A: IInteger; K, N: Cardinal; const M: IInteger = nil); overload;
 
 procedure NHalfFactorial(var A: IInteger; N: Cardinal; const M: IInteger = nil); overload;
 procedure NHalfComporial(var A: IInteger; N: Cardinal; const M: IInteger = nil); overload;
 procedure NHalfPrimorial(var A: IInteger; N: Cardinal; const M: IInteger = nil); overload;
-procedure NHalfBinomial(var A: IInteger; N: Cardinal; const M: IInteger = nil); overload;
+procedure NHalfBinomial (var A: IInteger; N: Cardinal; const M: IInteger = nil); overload;
 
 function  NFactorialTrailingZeros(const N: Int64; Base: Cardinal): Int64;
 
@@ -60,10 +60,10 @@ type
   end;
 
 function NPowerTable(var T: TPowerTable; N: Cardinal; L: Cardinal = 0; K: Cardinal = 0): Cardinal; overload;
-function NPowerTable(var A: IInteger; N: Cardinal; L: Cardinal = 0; K: Cardinal = 0;
-                       Shift: Boolean = False; const M: IInteger = nil): Cardinal; overload;
+function NPowerTable(var A: IInteger;    N: Cardinal; L: Cardinal = 0; K: Cardinal = 0;
+                                          Shift: Boolean = False; const M: IInteger = nil): Cardinal; overload;
 function NPrd(var A: IInteger; const T: TPowerTable; E: Cardinal; const M: IInteger = nil): Boolean; overload;
-function NPrd(var A: IInteger; const T: TPowerTable; const M: IInteger = nil): Boolean; overload;
+function NPrd(var A: IInteger; const T: TPowerTable;              const M: IInteger = nil): Boolean; overload;
 
 implementation
 
@@ -73,14 +73,14 @@ uses SysUtils, Prime, NMath, Math;
 procedure NFactorial_Moessner(var A: IInteger; N: Cardinal);
 var
   S: array of IInteger;
-  M,K,I: Cardinal;
+  M, K, I: Cardinal;
 begin
-  SetLength(S, N +1);
+  SetLength(S, N + 1);
   NSet(S[0], 1);
   for M := 1 to N do
     for K := M downto 1 do
       for I := 1 to K do
-         NAdd(S[I], S[I -1]);
+         NAdd(S[I], S[I - 1]);
   NSwp(A, S[N]);
 end;
 
@@ -105,26 +105,27 @@ procedure NFactorial_Recursive(var A: IInteger; N: Cardinal);
     begin
       NSet(P, K);
       Inc(K);
+    end else if N = 2 then
+    begin
+      NSet(P, K);
+      NMul(P, K + 1);
+      Inc(K, 2);
     end else
-      if N = 2 then
-      begin
-        NSet(P, K);
-        NMul(P, K +1);
-        Inc(K, 2);
-      end else
-      begin
-        NSplit(P, K, M);
-        NSplit(Q, K, N - M);
-        NMul(P, Q);
-      end;
+    begin
+      NSplit(P, K, M);
+      NSplit(Q, K, N - M);
+      NMul(P, Q);
+    end;
   end;
 
 var
   K: Cardinal;
 begin
   K := 1;
-  if N < 2 then NSet(A, 1)
-    else NSplit(A, K, N);
+  if N < 2 then
+    NSet(A, 1)
+  else
+    NSplit(A, K, N);
 end;
 
 procedure NFactorial_DivideAndConquer(var A: IInteger; N: Cardinal);
@@ -156,10 +157,10 @@ var
   end;
 
 var
-  I,J,K: Cardinal;
+  I, J, K: Cardinal;
   L: Integer;
   Len: array of Cardinal;
-  P,Q: IInteger;
+  P, Q: IInteger;
 begin
   if N >= 2 then
   begin
@@ -170,9 +171,9 @@ begin
     K := N;
     for I := J downto 0 do
     begin
-      L := K + K and 1 -1;
+      L := K + K and 1 - 1;
       K := K shr 1;
-      Dec(L, K + K and 1 +1);
+      Dec(L, K + K and 1 + 1);
       if L >= 0 then
         Len[I] := 1 + L shr 1;
     end;
@@ -187,7 +188,8 @@ begin
         NMul(A, Q);
       end;
     NShl(A, N - Cardinal(NBitWeight(N)));
-  end else NSet(A, 1);
+  end else
+    NSet(A, 1);
 end;
 
 procedure NFactorial_Binomial(var A: IInteger; N: Cardinal);
@@ -195,7 +197,7 @@ procedure NFactorial_Binomial(var A: IInteger; N: Cardinal);
 var
   I: Integer;
   K: Cardinal;
-  F,B: IInteger;
+  F, B: IInteger;
 begin
   NSet(F, 1);
   I := NLog2(N);
@@ -231,12 +233,15 @@ procedure NFactorial_Jason_GMP(var A: IInteger; N: Cardinal);
     end;
 
   var
-    A,Z,Y,N,Mask,Stc,Stn: Cardinal;
+    A, Z, Y, N, Mask, Stc, Stn: Cardinal;
   begin
     Inc(Low);
-    if not Odd(Low) then Inc(Low);
-    if High = 0 then Inc(High) else
-      if not Odd(High) then Dec(High);
+    if not Odd(Low) then
+      Inc(Low);
+    if High = 0 then
+      Inc(High)
+    else if not Odd(High) then
+      Dec(High);
     if High < Low then
     begin
       NSet(S[0], 1);
@@ -247,7 +252,7 @@ procedure NFactorial_Jason_GMP(var A: IInteger; N: Cardinal);
       NSet(S[0], Low);
       Exit;
     end;
-    High := (High - Low) div 2 +1;
+    High := (High - Low) div 2 + 1;
     if High <= 1 shl 5 then
     begin
       NSmallOddProduct(S[0], Low, 2, High);
@@ -268,7 +273,7 @@ procedure NFactorial_Jason_GMP(var A: IInteger; N: Cardinal);
       Inc(Stc);
       while not Odd(Y) do
       begin
-        NMul(S[stn -2], S[stn -1]);
+        NMul(S[stn - 2], S[stn - 1]);
         Dec(stn);
         Y := Y shr 1;
       end;
@@ -278,10 +283,10 @@ procedure NFactorial_Jason_GMP(var A: IInteger; N: Cardinal);
 var
   B: IInteger;
   S: IIntegerArray;
-  I,J,Z: Integer;
+  I, J, Z: Integer;
 begin
   SetLength(S, 33);
-  Z := NLog2(N div 3) +1;
+  Z := NLog2(N div 3) + 1;
   NSet(A, 1);
 
 {$IFDEF Old_Jason}
@@ -291,7 +296,7 @@ begin
   NSet(B, 1);
   for I := Z downto 1 do
   begin
-    NOddProduct(N shr I, N shr (I -1), S);
+    NOddProduct(N shr I, N shr (I - 1), S);
     NMul(B, S[0]);
     NMul(A, B);
   end;
@@ -307,7 +312,7 @@ begin
     begin
       if Z >= I then
       begin
-        NOddProduct(N shr I, N shr (I -1), S);
+        NOddProduct(N shr I, N shr (I - 1), S);
         if I <> J then
           NPow(S[0], S[0], I div J);
         NMul(B, S[0]);
@@ -332,7 +337,7 @@ end;
 function NPowerTable(var T: TPowerTable; N: Cardinal; L: Cardinal; K: Cardinal): Cardinal;
 // compute primepowers in T[] where ((N! / L! / K!) / 2^Result)
 
-  function FindEP(K,L,N,P: Cardinal): Cardinal;
+  function FindEP(K, L, N, P: Cardinal): Cardinal;
   // extract exponents to base P, where P is prime
   var
     E: Cardinal;
@@ -363,7 +368,7 @@ resourcestring
   sNPowerTable = 'NPowerTable(), requiere K <= N and L <= N and L + K <= N';
 var
   P: Cardinal;
-  E,I,C: Cardinal;
+  E, I, C: Cardinal;
   S: TSmallPrimeSieve;
 begin
   if K > L then
@@ -372,7 +377,8 @@ begin
     K := L;
     L := I;
   end;
-  if (K > N) or (L > N) or (L + K > N) then NRaise(@sNPowerTable);
+  if (K > N) or (L > N) or (L + K > N) then
+    NRaise(@sNPowerTable);
 // extract power to base 2
   Result := (N - L - K) - Cardinal(NBitWeight(N) - NBitWeight(L) - NBitWeight(K));
 // extract powers to each prime <= N
@@ -383,11 +389,13 @@ begin
   repeat
     Inc(I);
     P := S[I];
-    if P > N then Break;
+    if P > N then
+      Break;
     E := FindEP(K, L, N, P);
     if E <> 0 then
     begin
-      if C mod 2048 = 0 then SetLength(T, C + 2048);
+      if C mod 2048 = 0 then
+        SetLength(T, C + 2048);
       T[C].E := E;
       T[C].B := P;
       Inc(C);
@@ -408,7 +416,8 @@ begin
   if Shift then
   begin
     NShl(R, Result);
-    if M <> nil then NMod(R, M);
+    if M <> nil then
+      NMod(R, M);
   end;
   NSwp(R, A);
 end;
@@ -419,7 +428,7 @@ function NPrd(var A: IInteger; const T: TPowerTable; E: Cardinal; const M: IInte
 // if result = false then A is normaly zero
 // we use an iterative binary splitting
 var
-  I,J,K,L,N: Integer;
+  I, J, K, L, N: Integer;
   BreakEven: Integer;
   P: IInteger;
   S: array[0..32] of IInteger; // 32 + 1 IInteger for max. range
@@ -433,7 +442,8 @@ begin
     if (T[I].E and E <> 0) and (T[I].B > 0) then
     begin
       NMul(P, T[I].B);
-      if M <> nil then NMod(P, M);
+      if M <> nil then
+        NMod(P, M);
       if NSize(P, piLong) >= BreakEven then
       begin
      // now we exide our BreakEven, P is such big that multiplication with
@@ -445,20 +455,23 @@ begin
         while L and 1 = 0 do
         begin
           Dec(J);
-          NMul(S[J -1], S[J]);
-          if M <> nil then NMod(S[J -1], M);
+          NMul(S[J - 1], S[J]);
+          if M <> nil then
+            NMod(S[J - 1], M);
           L := L shr 1;
         end;
         NSet(P, 1);
       end;
       Inc(N);              
     end;
-  if M <> nil then NMod(P, M);
+  if M <> nil then
+    NMod(P, M);
   NSwp(S[J], P);
   while J > 0 do
   begin
-    NMul(S[J -1], S[J]);
-    if M <> nil then NMod(S[J -1], M);
+    NMul(S[J - 1], S[J]);
+    if M <> nil then
+      NMod(S[J - 1], M);
     Dec(J);
   end;
   NSwp(S[0], A);
@@ -489,7 +502,7 @@ function NPrd(var A: IInteger; const T: TPowerTable; const M: IInteger): Boolean
 }
 
 var
-  P,Q: IInteger;
+  P, Q: IInteger;
   E: Cardinal;
   I: Integer;
 begin
@@ -555,7 +568,7 @@ function NFactorialTrailingZeros(const N: Int64; Base: Cardinal): Int64;
   end;
 
 var
-  I,Prime,BaseRoot,Multiple: Cardinal;
+  I, Prime, BaseRoot, Multiple: Cardinal;
   Power: Int64;
 begin
   if Base < 2 then
@@ -569,7 +582,8 @@ begin
   I := 0;
   repeat
     Prime := SmallPrimes[I];
-    if Prime > BaseRoot then Break;
+    if Prime > BaseRoot then
+      Break;
     Inc(I);
     Multiple := 0;
     while Base mod Prime = 0 do
@@ -580,26 +594,31 @@ begin
     if Multiple > 0 then
     begin
       Power := PrimePower(N, Prime) div Multiple;
-      if Result > Power then Result := Power;
+      if Result > Power then
+        Result := Power;
     end;
   until Base = 1;
   if Base > 1 then
   begin
     Power := PrimePower(N, Base);
-    if Result > Power then Result := Power;
+    if Result > Power then
+      Result := Power;
   end;
 end;
 
-procedure NBinomial(var A: IInteger; N,K: Cardinal; const M: IInteger);
+procedure NBinomial(var A: IInteger; N, K: Cardinal; const M: IInteger);
 //                n!
 //A = n_C_k = ----------, mod M if M <> nil
 //            k!(n - k)!
 resourcestring
   sNBinomial = 'NBinomial(), invalid parameter K > N';
 begin
-  if K > N then NRaise(@sNBinomial) else
-    if K or N = 0 then NSet(A, 1)
-      else NPowerTable(A, N, N - K, K, True, M);
+  if K > N then
+    NRaise(@sNBinomial);
+  if K or N = 0 then
+    NSet(A, 1)
+  else
+    NPowerTable(A, N, N - K, K, True, M);
 end;
 
 procedure NHalfBinomial(var A: IInteger; N: Cardinal; const M: IInteger);
@@ -608,25 +627,29 @@ begin
   NPowerTable(A, N, N - N div 2, N div 2, True, M);
 end;
 
-procedure NProduct(var A: IInteger; N,K: Cardinal; const M: IInteger);
+procedure NProduct(var A: IInteger; N, K: Cardinal; const M: IInteger);
 // A = n! div k!, mod M if M <> nil
 resourcestring
   sNProduct = 'NProduct(), invalid parameter K > N';
 begin
-  if K > N then NRaise(@sNProduct)
-    else NPowerTable(A, N, K, 0, True, M);
+  if K > N then
+    NRaise(@sNProduct);
+  NPowerTable(A, N, K, 0, True, M);
 end;
 
-procedure NPermutation(var A: IInteger; N,K: Cardinal; const M: IInteger);
+procedure NPermutation(var A: IInteger; N, K: Cardinal; const M: IInteger);
 //                n!
 //A = n_P_k = --------,  mod m if M <> nil
 //            (n - k)!
 resourcestring
   sNPermutation = 'NPermutation(), invalid parameter K > N';
 begin
-  if K > N then NRaise(@sNPermutation) else
-    if K = 0 then NSet(A, 1)
-      else NPowerTable(A, N, N - K, 0, True, M);
+  if K > N then
+    NRaise(@sNPermutation);
+  if K = 0 then
+    NSet(A, 1)
+  else
+    NPowerTable(A, N, N - K, 0, True, M);
 end;
 
 procedure NReducePowers(var T: TPowerTable; K: Cardinal = 0);
@@ -641,14 +664,17 @@ begin
     if T[I].B > K then
     begin
       Dec(T[I].E);
-      if T[I].E <> 0 then Break;
-    end else Break;
+      if T[I].E <> 0 then
+        Break;
+    end else
+      Break;
   end;
-  SetLength(T, I +1);
+  SetLength(T, I + 1);
   while I > 0 do
   begin
     Dec(I);
-    if T[I].B > K then Dec(T[I].E);
+    if T[I].B > K then
+      Dec(T[I].E);
   end;
 end;
 
@@ -660,14 +686,15 @@ var
   T: TPowerTable;
   R: IInteger;
 begin
-  S := NPowerTable(T, N) -1;
+  S := NPowerTable(T, N) - 1;
 // reduce all prime exponents
   NReducePowers(T);
   NPrd(R, T, M);
   if S > 0 then
   begin
     NShl(R, S);
-    if M <> nil then NMod(R, M);
+    if M <> nil then
+      NMod(R, M);
   end;
   NSwp(R, A);
 end;
@@ -680,20 +707,22 @@ var
   R: IInteger;
 begin
   S := NPowerTable(T, N, N div 2);
-  if N < 4 then Dec(S);
+  if N < 4 then
+    Dec(S);
 // reduce all prime exponents between [N/2] upto N
   NReducePowers(T, N div 2);
   NPrd(R, T, M);
   if S > 0 then
   begin
     NShl(R, S);
-    if M <> nil then NMod(R, M);
+    if M <> nil then
+      NMod(R, M);
   end;
   NSwp(R, A);
 end;
 
-procedure NPrimorial(var A: IInteger; K,N: Cardinal; const M: IInteger);
-// A = product of all primes between K,N, mod M, if M <> nil
+procedure NPrimorial(var A: IInteger; K, N: Cardinal; const M: IInteger);
+// A = product of all primes between K,N mod M, if M <> nil
 // K,N are any value, all primes between both values would be multiplied
 // (N - K) / Ln(B) +- (N - K)^(1/2) ~ digits of P(N) to Base B
 
@@ -701,7 +730,7 @@ var
   BreakEven: Cardinal;
   L: TSmallPrimeSieve;
 
-  procedure NSplit(var P: IInteger; S,E: Cardinal);
+  procedure NSplit(var P: IInteger; S, E: Cardinal);
   var
     N: Cardinal;
     Q: IInteger;
@@ -718,10 +747,11 @@ var
     begin
       N := (E + S) shr 1;
       NSplit(P, S, N);
-      NSplit(Q, N+1, E);
+      NSplit(Q, N + 1, E);
       NMul(P, Q);
     end;
-    if M <> nil then NMod(P, M);
+    if M <> nil then
+      NMod(P, M);
   end;
 
 resourcestring
@@ -737,27 +767,30 @@ begin
   if (N >= K) and (N > 1) then
   begin
     K := L.IndexOf(K);
-    if K = 0 then K := 1;
+    if K = 0 then
+      K := 1;
     N := L.IndexOf(N, True);
     if K <= N then
     begin
       NSplit(R, K, N);
       NSwp(R, A);
-    end else NSet(A, 1);
-  end else NSet(A, 1);
+    end else
+      NSet(A, 1);
+  end else
+    NSet(A, 1);
 end;
 
 procedure NHalfPrimorial(var A: IInteger; N: Cardinal; const M: IInteger = nil);
 begin
-  NPrimorial(A, N div 2 +1, N, M);
+  NPrimorial(A, N div 2 + 1, N, M);
 end;
 
 procedure NTestCombi(N: Cardinal);
 resourcestring
   sNTest = 'Selftest failed at';
 var
-  I,K: Cardinal;
-  A,B,C: IInteger;
+  I, K: Cardinal;
+  A, B, C: IInteger;
 begin
   for I := 0 to N do
   begin
@@ -783,7 +816,8 @@ begin
     NMul(B, C);
     NHalfPrimorial(C, I);
     NMul(B, C);
-    if NCmp(A, B) <> 0 then NRaise(@sNTest, 'NHalfComporial(), NHalfPrimorial(), NFactorial()');
+    if NCmp(A, B) <> 0 then
+      NRaise(@sNTest, 'NHalfComporial(), NHalfPrimorial(), NFactorial()');
   end;
   for I := 0 to N do
   begin
@@ -791,7 +825,8 @@ begin
     NFactorial(B, I div 2);
     NHalfFactorial(C, I);
     NMul(B, C);
-    if NCmp(A, B) <> 0 then NRaise(@sNTest, 'NHalfFactorial(), NFactorial()');
+    if NCmp(A, B) <> 0 then
+      NRaise(@sNTest, 'NHalfFactorial(), NFactorial()');
   end;
   for I := 0 to N do
     for K := 0 to I do
@@ -800,11 +835,10 @@ begin
       NBinomial(B, I, K);
       NFactorial(C, K);
       NMul(B, C);
-      if NCmp(A, B) <> 0 then NRaise(@sNTest, 'NPermutation(), NBinomial(), NFactorial()');
+      if NCmp(A, B) <> 0 then
+        NRaise(@sNTest, 'NPermutation(), NBinomial(), NFactorial()');
     end;
 end;
 
-
-
-
 end.
+

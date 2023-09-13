@@ -31,10 +31,9 @@ var
 
 {.$R P1003.res}  //  250 Class-Polynoms from Discriminant 0 upto  1003,  8.912 Bytes
 {.$R P4984.res}  //  503 Class-Polynoms from Discriminant 0 upto  4984, 22.681 Bytes
-{$R P8248.res}   //  316 Class-Polynoms from Discriminant 0 upto  8248, 11.403 Bytes
+{$R  P8248.res}  //  316 Class-Polynoms from Discriminant 0 upto  8248, 11.403 Bytes
 {.$R P9172.res}  //  380 Class-Polynoms from Discriminant 0 upto  9182, 14.556 Bytes
 {.$R P9988.res}  // 1000 Class-Polynoms from Discriminant 0 upto  9988, 69.346 Bytes
 {.$R P14008.res} //  507 Class-Polynoms from Discriminant 0 upto 14008, 32.768 Bytes
-
 
 
