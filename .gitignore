@@ -1,0 +1,8 @@
+**/__history
+**/__recovery
+*.~*
+
+Part_II/*.dcu
+Part_II/*.dproj.local
+Part_II/*.identcache
+Part_II/DECMathTest.exe

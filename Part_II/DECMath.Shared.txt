@@ -1,0 +1,187 @@
+  IInterfaceArray   = array of IInterface:
+  TClassType        = class of TXyt;
+  TIntfRecord       = record X: IInterface end;
+  IInterfaceArray   = array of IInterface;
+  TRecordArray      = array or record X: Integer end;
+
+  (A: TStream)
+  (A: IInterface)
+  (A: PResStringRec)
+  (A: TClassType)
+  (A: PTypeInfo)
+  (const A: AnsiString)
+  (const A: IInterface)
+  (const A: TVarRec)
+  (const A: array of const)
+  (const A: array of IInterface)
+  (var   A: IInterfaceArray)
+  (const A: IInterfaceArray)
+  (var   A: TRecordArray)
+  (const A: TRecordArray)
+  (var   A: TIntfRecord)
+  (const A: TIntfRecord)
+  (): AnsiString;
+  (): IInterface;
+  (): IInterfaceArray;
+
+  EMathAbort   = class(EAbort);
+  EMath        = class(Exception);
+  EInteger     = class(EMath);
+  EDigitAccess = class(EMath);
+
+
+
+
+
+  SysInit {
+    A:HInstance, A:@GetTls}
+  System {
+    T:TInterfacedObject, T:Pointer, T:Cardinal, T:Boolean, A:False,
+    T:String, T:AnsiString, A:.TInterfacedObject,
+    A:TInterfacedObject.AfterConstruction,
+    A:TInterfacedObject.BeforeDestruction, A:TInterfacedObject.NewInstance,
+    A:TObject.SafeCallException, A:TObject.Dispatch,
+    A:TObject.DefaultHandler, A:TObject.FreeInstance, T:Word, A:Ord,
+    A:GetMem, A:SizeOf, A:@GetMem, A:FillChar, A:@FillChar, A:Inc,
+    A:ReallocMem, A:@ReallocMem, A:@HandleFinally, A:TObject.Create,
+    T:Byte, A:Dec, A:Assigned, A:Break, A:@HandleAnyException,
+    A:@RaiseAgain, A:@DoneExcept, A:LoadResString, A:@RaiseExcept,
+    A:@LStrClr, T:PChar, A:Exit, A:True, A:TObject.Free, A:TObject.Destroy,
+    A:@BeforeDestruction, A:@ClassDestroy, A:@LStrToPChar, T:PAnsiChar,
+    A:MainInstance,
+    T:IDispatch, T:TVarRec, T:Integer,
+    A:Length, A:@DynArrayLength,
+    A:SetLength, A:@DynArraySetLength, A:@DynArrayClear,
+    A:High, A:@DynArrayHigh, A:Delete,
+    A:@LStrDelete, A:@LStrCat3, A:@LStrCatN, A:@LStrFromArray,
+    A:@LStrAsg, A:@LStrArrayClr, A:@IntfClear,
+    A:@FinalizeArray,
+    T:IUnknown, T:IInterface,
+    A:TObject.AfterConstruction, A:TObject.BeforeDestruction,
+    A:TObject.NewInstance,
+    T:TGUID,
+    A:TInterfacedObject.QueryInterface,
+    A:TInterfacedObject._AddRef, A:TInterfacedObject._Release,
+    A:@IntfCopy,
+    A:FreeMem, A:@FreeMem,
+    T:HRESULT,
+    A:@TryFinallyExit,
+    A:@ClassCreate, A:@AfterConstruction,
+    type System.Word,
+    T:Char, T:Int64,
+    T:Extended, T:PResStringRec,
+    type System.Cardinal, A:MaxInt,
+    A:Low,
+    A:@LStrCat, T:LongBool, A:Assert, A:@Assert,
+    A:Odd, A:@HandleOnException,
+    A:UpCase, A:@LStrLen, A:@LStrSetLength,
+    A:@LStrFromChar,
+    A:@LStrLAsg,
+    T:Variant, A:varTypeMask, A:varEmpty, A:varNull, A:varSmallint,
+    A:varArray, A:varByRef, T:Smallint, T:TVarData, A:varInteger,
+    A:varSingle, T:Single, A:varDouble, T:Double, A:varCurrency,
+    T:Currency, A:varOleStr, T:PWideChar, A:WideCharToString, A:varBoolean,
+    T:WordBool, A:varByte, A:varString, A:varDispatch, A:varUnknown,
+    A:varShortInt, T:Shortint, A:varInt64, A:varWord, A:varLongWord,
+    T:LongWord, A:@FSafeDivide, A:@LStrFromPWChar, A:vtInteger, A:vtInt64,
+    A:vtAnsiString, A:vtInterface, A:vtString, A:vtExtended, A:vtBoolean,
+    A:vtPChar, A:vtChar, A:vtWideChar, A:vtPWideChar, A:vtCurrency,
+    A:vtWideString, A:vtPointer, A:vtVariant, A:vtObject,
+    A:@LStrFromString, A:@LStrFromPChar, A:@LStrFromWChar, A:@IsClass,
+    A:Abs, A:Copy, A:@DynArrayCopyRange,
+    A:@InitializeArray, A:Trunc, A:Sqrt, A:@TRUNC, A:TypeInfo,
+    A:Exp, A:Ln, A:@EXP, A:@_llmod, A:Round, A:@FSafeDivideR, A:@ROUND,
+    A:Move, A:@UniqueStringA, A:StringOfChar, A:@LStrOfChar,
+    A:Swap, A:@AStrCmp,
+    A:@InitializeRecord, A:@FinalizeRecord, A:Write,
+    A:Output, A:@Write0Char, A:@Flush, A:Writeln, A:@WriteLong, A:@WriteLn,
+    A:ParamCount, A:ParamStr, A:@Write0LString, A:Halt, A:@Halt0,
+    A:@LStrCmp,
+    A:@_llmul,
+    T:Longint,
+    A:Fail, A:@Fail,
+    A:EnumResourceModules, T:TEnumModuleFunc,
+    A:@IntfCast,
+    A:@CopyRecord,
+    A:@IntfAddRef,
+    A:New, A:Dispose,
+    A:Continue,
+    A:@_lldiv,
+    A:SetString, A:@LStrFromPCharLen,
+    T:TObject,
+    T:TClass, A:Pos, A:@LStrPos,
+    A:TObject.InheritsFrom,
+    A:TObject.ClassName,
+    A:TObject.CleanupInstance, A:TObject.InstanceSize,
+    A:vmtParent,
+    A:UniqueString,
+    A:FindClassHInstance, A:AddModuleUnloadProc, A:RemoveModuleUnloadProc,
+    A:@AbstractError,
+    A:TObject.ClassType,
+    T:Comp,
+    T:WideString,
+    A:@WStrLen,
+    A:@WStrSetLength}
+  SysUtils {
+    T:Exception, A:.Exception, A:Exception.Create, A:FileExists,
+    A:fmOpenRead, A:fmShareDenyWrite,
+    A:IntToStr,
+    T:EAbort, A:.EAbort,
+    A:Exception.CreateFmt, T:EOutOfMemory,
+    A:.EOutOfMemory, T:Int64Rec, A:StrLen, A:AnsiLowerCase, A:StrCopy,
+    A:StrLComp, T:PWordArray, A:StrLIComp, T:PByteArray,
+    A:fmShareDenyNone, A:AnsiCompareText,
+    A:FileOpen, T:TSearchRec,
+    A:FindFirst, A:faAnyFile, A:faDirectory,
+    A:ExtractFileExt, A:FindNext, A:FindClose, A:ExtractFilePath,
+    A:IsEqualGUID, A:Format,
+    A:IntToHex,
+    A:AnsiUpperCase,
+    T:TByteArray,
+    A:EmptyStr,
+    A:StrPos,
+    A:Trim, A:StrPas}
+  Classes {
+    T:TFileStream, A:TStream.SetPosition, A:.TFileStream,
+    A:TFileStream.Create, A:fmCreate, A:TStream.GetPosition,
+    T:TStream, A:.TStream, A:TStream.WriteBuffer,
+    A:TStream.ReadBuffer,
+    T:TCustomMemoryStream, A:.TCustomMemoryStream,
+    A:TCustomMemoryStream.Read, A:TCustomMemoryStream.Seek,
+    A:TStream.GetSize, A:TStream.SetSize,
+    A:TStream.Seek, T:TInterfaceList, A:TCustomMemoryStream.SetPointer,
+    A:TInterfaceList.Add, T:TResourceStream,
+    A:.TResourceStream, A:TResourceStream.Create, A:.TInterfaceList,
+    A:TInterfaceList.Create, A:TInterfaceList.GetCount,
+    A:TInterfaceList.Get,
+    T:TPersistent, A:.TPersistent, A:TPersistent.AssignTo,
+    A:TPersistent.DefineProperties, A:TPersistent.Destroy,
+    A:TPersistent.Assign, T:TStrings, T:TList, A:.TList,
+    A:TList.IndexOf, A:TList.Delete, A:.TStrings, A:TStrings.BeginUpdate,
+    A:TStrings.EndUpdate, A:TList.Get, A:TList.Add}
+  Windows {
+    T:TRTLCriticalSection, A:EnterCriticalSection, A:LeaveCriticalSection,
+    A:DeleteFile, A:GetProcAddress, A:InitializeCriticalSection,
+    A:DeleteCriticalSection,
+    T:THandle, A:GetCurrentThreadId,
+    A:GetCurrentThread,
+    A:GetTickCount, A:GetThreadPriority, A:THREAD_PRIORITY_ERROR_RETURN,
+    T:PByte, T:HKEY, A:RegOpenKeyEx, A:HKEY_CURRENT_USER,
+    A:KEY_QUERY_VALUE, A:RegQueryValueEx, A:RegCloseKey, A:RegCreateKeyEx,
+    A:REG_OPTION_NON_VOLATILE, A:KEY_READ, A:KEY_WRITE, A:RegSetValueEx,
+    A:REG_BINARY,
+    A:GetFileSize, A:CreateFileMapping, A:PAGE_READONLY,
+    A:MapViewOfFile, A:FILE_MAP_READ, A:UnmapViewOfFile, A:CloseHandle,
+    T:BOOL, A:EnumResourceNames,
+    A:GetSystemTime, A:QueryPerformanceCounter,
+    A:GetTickCount}
+  Math
+  TypInfo {
+    T:PTypeInfo, T:PTypeData, A:GetTypeData, T:TTypeKind, A:tkEnumeration,
+    A:tkInteger, T:TOrdType, A:otSByte, A:otUByte, A:otSWord, A:otUWord,
+    A:tkInt64, A:tkFloat, T:TFloatType, A:ftComp, A:ftSingle, A:ftDouble,
+    A:ftExtended, A:ftCurr, A:tkString, A:tkLString, A:tkWString,
+    A:tkInterface, T:TIntfFlag, A:ifHasGuid}
+  Variants {
+    A:VarType, A:VarArrayDimCount, A:VarArrayHighBound, A:VarArrayLowBound,
+    A:VarArrayLock, A:VarArrayUnlock}

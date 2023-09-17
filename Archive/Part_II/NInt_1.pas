@@ -22,7 +22,7 @@ unit NInt_1;
 
 interface
 
-uses SysUtils, NInts, Console, NMath, ConsoleForm;
+uses SysUtils, NInts;
 
 type
   TCFEFunc = function(Index: Integer): Integer; register;
