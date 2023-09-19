@@ -33,6 +33,7 @@ uses
 
 type
   RetString = AnsiString;  // see DECMath_InitMemoryStringHooks
+  StreamArr = TBytes;      // was (Stream: TStream)
 
 {$REGION 'ASN1 : SysUtils, Classes'}                               {$ENDREGION}
 {$REGION 'CRC : '}                                                 {$ENDREGION}
@@ -290,8 +291,8 @@ type
     procedure Precompute(const B, M: IInteger; EMaxBitSize: Integer; EIsNeg: Boolean);
     function  PowMod  (var A: IInteger; const B, E, M: IInteger; var Res: Boolean): Boolean;
     function  PowMod2k(var A: IInteger; const B, E: IInteger; K: Cardinal; var Res: Boolean): Boolean;
-    procedure Save(Stream: TStream); deprecated 'no shared classes';
-    procedure Load(Stream: TStream); deprecated 'no shared classes';
+    procedure Save(Stream: TStream {TODO: var   Data: StreamArr}); deprecated 'no shared classes';
+    procedure Load(Stream: TStream {TODO: const Data: StreamArr}); deprecated 'no shared classes';
   end;
 
 procedure NSet(var A: IInteger; B: Integer); overload;                                                     external 'DECMath.dll' name 'NInts_NSet_IIIn'          delayed;
@@ -301,21 +302,19 @@ procedure NSet(var A: IInteger; const B: IInteger = nil; Abs: Boolean = False); 
 function  NSet(var A: IInteger; const B: AnsiString; const Format: TStrFormat): Integer; overload;         external 'DECMath.dll' name 'NInts_NSet_IIStSF'        delayed;
 procedure NSet(var A: IInteger; const B: AnsiString; Base: TBase = 0); overload;                           external 'DECMath.dll' name 'NInts_NSet_IIStBa'        delayed;
 procedure NSet(var A: IInteger; const B; Size: Integer; Bits: Integer = 0); overload;                      external 'DECMath.dll' name 'NInts_NSet_IIBInIn'       delayed;
-procedure NSet(var A: IInteger; Stream: TStream; Format: TIntegerFormat = ifASN1); overload;
-                                                                   deprecated 'no shared classes';         external 'DECMath.dll' name 'NInts_NSet_IIStIF'        delayed;
-procedure NSet(var A: IInteger; const B: TVarRec); overload;       deprecated 'no String/UnicodeString';   external 'DECMath.dll' name 'NInts_NSet_IIVR'          delayed;
-procedure NSet(var A: IIntegerArray; const B: array of const); overload; deprecated 'no shared classes';   external 'DECMath.dll' name 'NInts_NSet_IAAC'          delayed;
+procedure NSet(var A: IInteger; const B: StreamArr; Format: TIntegerFormat = ifASN1); overload;            external 'DECMath.dll' name 'NInts_NSet_IIStIF'        delayed;
+procedure NSet(var A: IInteger; const B: TVarRec); overload;                                               external 'DECMath.dll' name 'NInts_NSet_IIVR'          delayed;
+procedure NSet(var A: IIntegerArray; const B: array of const); overload;                                   external 'DECMath.dll' name 'NInts_NSet_IAAC'          delayed;
 procedure NSet(var A: IIntegerArray; const B: IIntegerArray); overload;                                    external 'DECMath.dll' name 'NInts_NSet_IAIA'          delayed;
 procedure NRnd(var A: IInteger; Bits: Integer = 0; Sign: Boolean = False); overload;                       external 'DECMath.dll' name 'NInts_NRnd_IIInBo'        delayed;
 function  NInt(A: Integer = 0): IInteger; overload;                                                        external 'DECMath.dll' name 'NInts_NInt_In'            delayed;
 function  NInt(A: Int64): IInteger; overload;                                                              external 'DECMath.dll' name 'NInts_NInt_I6'            delayed;
 function  NInt(A: Extended): IInteger; overload;                                                           external 'DECMath.dll' name 'NInts_NInt_Ex'            delayed;
-function  NInt(const A: IInteger; Abs: Boolean = False): IInteger; overload;                               external 'DECMath.dll' name 'NInts_NInt_IIBo'          delayed;
-function  NInt(const A; Size: Integer; Bits: Integer = 0): IInteger; overload;                             external 'DECMath.dll' name 'NInts_NInt_AInIn'         delayed;
-function  NInt(const A: AnsiString; Base: TBase = 0): IInteger; overload;                                  external 'DECMath.dll' name 'NInts_NInt_StBa'          delayed;
-function  NInt(Stream: TStream; Format: TIntegerFormat = ifASN1): IInteger; overload;
-                                                                         deprecated 'no shared classes';   external 'DECMath.dll' name 'NInts_NInt_StIF'          delayed;
-function  NInt(const A: array of const): IIntegerArray; overload;                                          external 'DECMath.dll' name 'NInts_NInt_AC'            delayed;
+function  NInt(const  A: IInteger; Abs: Boolean = False): IInteger; overload;                              external 'DECMath.dll' name 'NInts_NInt_IIBo'          delayed;
+function  NInt(const  A; Size: Integer; Bits: Integer = 0): IInteger; overload;                            external 'DECMath.dll' name 'NInts_NInt_AInIn'         delayed;
+function  NInt(const  A: AnsiString; Base: TBase = 0): IInteger; overload;                                 external 'DECMath.dll' name 'NInts_NInt_StBa'          delayed;
+function  NInt(const  A: StreamArr; Format: TIntegerFormat = ifASN1): IInteger; overload;                  external 'DECMath.dll' name 'NInts_NInt_StIF'          delayed;
+function  NInt(const  A: array of const): IIntegerArray; overload;                                         external 'DECMath.dll' name 'NInts_NInt_AC'            delayed;
 function  NSgn(const  A: IInteger; Extended: Boolean = False): Integer;  overload;                         external 'DECMath.dll' name 'NInts_NSgn_IIBo'          delayed;
 procedure NSgn(var    A: IInteger;                       Sign: Integer); overload;                         external 'DECMath.dll' name 'NInts_NSgn_IIIn'          delayed;
 function  NOdd(const  A: IInteger):     Boolean;           overload;                                       external 'DECMath.dll' name 'NInts_NOdd_II'            delayed;
@@ -492,9 +491,9 @@ function  NInt64(const A: IInteger; RangeCheck: Boolean = True): Int64; overload
 function  NLong (const A: IInteger; RangeCheck: Boolean = True): Cardinal; overload;                                                 external 'DECMath.dll' name 'NInts_NLong_IIBo'                delayed;
 function  NFloat(const A: IInteger; RangeCheck: Boolean = True): Extended; overload;                                                 external 'DECMath.dll' name 'NInts_NFloat_IIBo'               delayed;
 function  NRange(const A: IInteger; Range: PTypeInfo; RaiseError: Boolean = False): Boolean; overload;                               external 'DECMath.dll' name 'NInts_NRange_IITIBo'             delayed;
-procedure NSave (const A: IInteger; Stream: TStream;            Format: TIntegerFormat = ifASN1); overload; deprecated 'no shared classes'; external 'DECMath.dll' name 'NInts_NSave_IIStIF'       delayed;
+procedure NSave (const A: IInteger; var   Data:     StreamArr;  Format: TIntegerFormat = ifASN1); overload;                          external 'DECMath.dll' name 'NInts_NSave_IIStIF'       delayed;
 procedure NSave (const A: IInteger; const FileName: AnsiString; Format: TIntegerFormat = ifASN1); overload;                          external 'DECMath.dll' name 'NInts_NSave_IIStIF'              delayed;
-procedure NLoad   (var R: IInteger; Stream: TStream;            Format: TIntegerFormat = ifASN1); overload; deprecated 'no shared classes';external 'DECMath.dll' name 'NInts_NLoad_IIStIF'        delayed;
+procedure NLoad   (var R: IInteger; const Data:     StreamArr;  Format: TIntegerFormat = ifASN1); overload;                          external 'DECMath.dll' name 'NInts_NLoad_IIStIF'        delayed;
 procedure NLoad   (var R: IInteger; const FileName: AnsiString; Format: TIntegerFormat = ifASN1); overload;                          external 'DECMath.dll' name 'NInts_NLoad_IIStIF'              delayed;
 procedure NHash   (var A: IInteger;                    Hash: TDECHashClass = nil; Bits: Integer = 0; Index: Cardinal = 0); overload; external 'DECMath.dll' name 'NInts_NHash_IIHCInCa'            delayed;
 procedure NHash   (var A: IInteger; const B: IInteger; Hash: TDECHashClass = nil; Bits: Integer = 0; Index: Cardinal = 0); overload; external 'DECMath.dll' name 'NInts_NHash_IIIIHCInCa'          delayed;
@@ -510,8 +509,8 @@ procedure NRedc(var A: IIntegerArray; const B: IIntegerArray; const M: IInteger;
 procedure NRedc(var A: IIntegerArray; const    M: IInteger;                      Inv2k: Cardinal = 0); overload;                     external 'DECMath.dll' name 'NInts_NRedc_IAIICa'              delayed;
 
 procedure NSet (var   P: IPowModPrecomputation; const B, M: IInteger; EMaxBitSize: Integer; EIsNeg: Boolean = False); overload;      external 'DECMath.dll' name 'NInts_NSet_MPIIIIInBo'           delayed;
-procedure NSave(const P: IPowModPrecomputation; Stream: TStream); overload; deprecated 'no shared classes';                          external 'DECMath.dll' name 'NInts_NSave_MPSt'                delayed;
-procedure NLoad(var   P: IPowModPrecomputation; Stream: TStream); overload; deprecated 'no shared classes';                          external 'DECMath.dll' name 'NInts_NLoad_MPSt'                delayed;
+procedure NSave(const P: IPowModPrecomputation; var   Data: StreamArr); overload;                                                    external 'DECMath.dll' name 'NInts_NSave_MPSt'                delayed;
+procedure NLoad(var   P: IPowModPrecomputation; const Data: StreamArr); overload;                                                    external 'DECMath.dll' name 'NInts_NLoad_MPSt'                delayed;
 
 function  NSum(const A: IInteger): Long96; overload;                                                                                 external 'DECMath.dll' name 'NInts_NSum_II'                   delayed;
 function  NMod(const A: Long96; B: Cardinal): Cardinal; overload;                                                                    external 'DECMath.dll' name 'NInts_NMod_L9Ca'                 delayed;
@@ -975,28 +974,27 @@ type
 // compute the verifyable Prime dependend of ID into P,
 // if RaiseError = False then Result contains Errorcode or ZERO for success
 function  NSet(var P: IInteger; const ID: IIDPrime; CheckPrimality: Boolean = False;
-            RaiseError: Boolean = True): Integer; overload;                                         external 'DECMath.dll' name 'IDPrimes_NSet_IIDPBoBo' delayed;
+            RaiseError: Boolean = True): Integer; overload;                                               external 'DECMath.dll' name 'IDPrimes_NSet_IIDPBoBo' delayed;
 // same as above, but as function and raise always an error on bad parameters
-function  NInt(const ID: IIDPrime; CheckPrimality: Boolean = False): IInteger; overload;            external 'DECMath.dll' name 'IDPrimes_NInt_DPBo'     delayed;
+function  NInt(const ID: IIDPrime; CheckPrimality: Boolean = False): IInteger; overload;                  external 'DECMath.dll' name 'IDPrimes_NInt_DPBo'     delayed;
 // setup ID to ID-Prime formated string
 function  NSet(var ID: IIDPrime; const S: AnsiString;
-            RaiseError: Boolean = False): Integer; overload;                                        external 'DECMath.dll' name 'IDPrimes_NSet_DPStBo'   delayed;
+            RaiseError: Boolean = False): Integer; overload;                                              external 'DECMath.dll' name 'IDPrimes_NSet_DPStBo'   delayed;
 // setuo ID, same as above but as fucntion and raise always an error on bad parameters
-function  NIDPrime(const ID: AnsiString): IIDPrime; overload;                                       external 'DECMath.dll' name 'IDPrimes_NIDPrime_St'   delayed;
+function  NIDPrime(const ID: AnsiString): IIDPrime; overload;                                             external 'DECMath.dll' name 'IDPrimes_NIDPrime_St'   delayed;
 // converts ID into an ID-Prime formatted string
-function  NStr(const ID: IIDPrime): RetString; overload;                                            external 'DECMath.dll' name 'IDPrimes_NStr_DP'       delayed;
+function  NStr(const ID: IIDPrime): RetString; overload;                                                  external 'DECMath.dll' name 'IDPrimes_NStr_DP'       delayed;
 // save ID into stream
-procedure NSave(const ID: IIDPrime; Stream: TStream); overload; deprecated 'no shared classes';     external 'DECMath.dll' name 'IDPrimes_NSave_DPSt'    delayed;
+procedure NSave(const ID: IIDPrime; var Data: StreamArr); overload;                                       external 'DECMath.dll' name 'IDPrimes_NSave_DPSt'    delayed;
 // load ID from stream
-function  NLoad(var ID: IIDPrime; Stream: TStream; RaiseError: Boolean = False): Integer; overload;
-                                                                deprecated 'no shared classes';     external 'DECMath.dll' name 'IDPrimes_NLoad_DPStBo'  delayed;
+function  NLoad(var ID: IIDPrime; const Data: StreamArr; RaiseError: Boolean = False): Integer; overload; external 'DECMath.dll' name 'IDPrimes_NLoad_DPStBo'  delayed;
 // load a ID Prime from Stream
-function  NIDPrime(Stream: TStream): IIDPrime; overload;        deprecated 'no shared classes';     external 'DECMath.dll' name 'IDPrimes_NIDPrime_St'   delayed;
+function  NIDPrime(const Data: StreamArr): IIDPrime; overload;                                            external 'DECMath.dll' name 'IDPrimes_NIDPrime_St'   delayed;
 // created an ID Prime and correspondending Prime as result
 function  NMake(var ID: IIDPrime; BitSize: Word; SeedBitSize: Word = 31;
             const Residue: IInteger = nil; const Modulus: IInteger = nil;
             HashIndex: Word = 1; HashClass: TDECHashClass = nil;
-            Callback: TIIntegerPrimeCallback = nil): IInteger; overload;                            external 'DECMath.dll' name 'IDPrimes_NMake_XXX'     delayed;
+            Callback: TIIntegerPrimeCallback = nil): IInteger; overload;                                  external 'DECMath.dll' name 'IDPrimes_NMake_XXX'     delayed;
 
 const
   // Identities for some Hash Algorithms, intern used in binary Dataformat
@@ -1096,8 +1094,8 @@ type
     procedure Precompute           (const B: I2Point;                    const E: IGFpEC; CMaxBitSize: Integer);
     function  Mul  (var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC; var Res: Boolean): Boolean;
     function  Mul2k(var A: I2Point; const B: I2Point;       K: Cardinal; const E: IGFpEC; var Res: Boolean): Boolean;
-    procedure Save(Stream: TStream); deprecated 'no shared classes';
-    procedure Load(Stream: TStream); deprecated 'no shared classes';
+    procedure Save(Stream: TStream {TODO: var   Data: StreamArr}); deprecated 'no shared classes';
+    procedure Load(Stream: TStream {TODO: const Data: StreamArr}); deprecated 'no shared classes';
   end;
 
 procedure NECRaise(State: TECState); {overload;}                                                                                                  external 'DECMath.dll' name 'NGFPs_NECRaise_ES'               delayed;
@@ -1124,8 +1122,8 @@ function  NEmpty(const A: I2Point): Boolean; overload;                          
 function  NEmpty(const A: I3Point): Boolean; overload;                                                                                            external 'DECMath.dll' name 'NGFPs_NEmpty_3P'                 delayed;
 // modified Brickell's precomputation for mul
 procedure NSet   (var P: IGFpMulPrecomputation; const B: I2Point; const E: IGFpEC; CMaxBitSize: Integer); overload;                               external 'DECMath.dll' name 'NGFPs_NSet_MP2PFCIn'             delayed;
-procedure NSave(const P: IGFpMulPrecomputation; Stream: TStream); overload; deprecated 'no shared classes';                                       external 'DECMath.dll' name 'NGFPs_NSave_MPSt'                delayed;
-procedure NLoad  (var P: IGFpMulPrecomputation; Stream: TStream); overload; deprecated 'no shared classes';                                       external 'DECMath.dll' name 'NGFPs_NLoad_MPSt'                delayed;
+procedure NSave(const P: IGFpMulPrecomputation; var   Data: StreamArr); overload;                                                                 external 'DECMath.dll' name 'NGFPs_NSave_MPSt'                delayed;
+procedure NLoad  (var P: IGFpMulPrecomputation; const Data: StreamArr); overload;                                                                 external 'DECMath.dll' name 'NGFPs_NLoad_MPSt'                delayed;
 
 function NMul_MontPB  (var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC): Boolean;                                            external 'DECMath.dll' name 'NGFPs_NMul_MontPB_2P2PIIFC'      delayed;
 function NMul_Affine  (var A: I2Point; const B: I2Point;       C: IInteger; const E: IGFpEC): Boolean;                                            external 'DECMath.dll' name 'NGFPs_NMul_Affine_2P2PIIFC'      delayed;
@@ -1192,11 +1190,6 @@ type
     NewAnsiString: procedure(var Dest: AnsiString; Source: PAnsiChar; CharCount: Integer; CodePage: Word);
   end;
 
-procedure MyLStrFromPCharLen(var Dest: AnsiString; Source: PAnsiChar; CharCount: Integer; CodePage: Word);
-begin
-  SetString(Dest, Source, CharCount);  // the compiler magic goes to System._LStrFromPCharLen(Dest, Source, CharCount, CP_ACP);
-end;
-
 procedure DECMath_InitMemoryStringHooks(const Refs: THookRefs); external 'DECMath.dll' name 'DECMath_InitMemoryStringHooks'   delayed;
 procedure DECMath_RemoveMemoryStringHooks;                      external 'DECMath.dll' name 'DECMath_RemoveMemoryStringHooks' delayed;
 
@@ -1208,7 +1201,11 @@ initialization
   {$WARN SYMBOL_DEPRECATED OFF}
   GetMemoryManager(HookRefs.MemoryManager);
   {$WARN SYMBOL_DEPRECATED ON}
-  HookRefs.NewAnsiString := @MyLStrFromPCharLen;
+  asm
+    //HookRefs.NewAnsiString := System._LStrFromPCharLen; // aka System.SetString(AnsiString, ...
+    LEA EAX, System.@LStrFromPCharLen
+    MOV HookRefs.NewAnsiString, EAX
+  end;
   DECMath_InitMemoryStringHooks(HookRefs);
 
 finalization

@@ -12,11 +12,15 @@ uses
 {$I VER.INC}
 
 type
-  RetString = AnsiString;  // see DECMath_InitMemoryStringHooks
+  RetString = AnsiString;     // see DECMath_InitMemoryStringHooks
+  StreamArr = array of Byte;  // was (Stream: TStream)
+  StringArr = array of AnsiString;
 
-(***** Hooks (Declaration) *****)
+(***** Hooks (Declaration) and Helper *****)
 
 type
+  TVarRecArray = array of TVarRec;
+
   THookRefs = packed record
     MemoryManager: TMemoryManager;
     NewAnsiString: procedure(var Dest: {AnsiString}Pointer; Source: PAnsiChar; CharCount: Integer; CodePage: Word);
@@ -25,6 +29,41 @@ type
 var
   OldHookRefs: THookRefs;
   CurHookRefs: THookRefs;
+
+procedure _MakeConstStr(const A: TVarRec; var R: TVarRec; var S: AnsiString);
+var
+  W: WideString;
+begin
+  if Assigned(A.VPointer) then
+    SetString(W, PWideChar(A.VPointer), PInteger(Integer(A.VPointer) - 4)^); // PStrRec((A.VPointer - SizeOf(StrRec))).length
+  S             := W;
+  R.VType       := vtAnsiString;
+  R.VAnsiString := Pointer(S);
+end;
+
+function _CheckArrayOfConst(const A: array of const): Boolean;
+var
+  i: Integer;
+begin
+  Result := True;
+  for i := High(A) downto 0 do
+    if A[i].VType = {vtUnicodeString}17 then
+      Exit;
+  Result := False;
+end;
+
+procedure _MakeArrayOfConst(const A: array of const; var R: TVarRecArray; var S: StringArr);
+var
+  i: Integer;
+begin
+  SetLength(R, Length(A));
+  SetLength(S, Length(A));
+  for i := High(A) downto 0 do
+    if A[i].VType = {vtUnicodeString}17 then
+      _MakeConstStr(A[i], R[i], S[i])
+    else
+      R[i] := TVarRec(A[i]);
+end;
 
 (***** --LHSZ *** SysUtils-- *****)
 (***** ASN1 *** SysUtils, Classes *****)
@@ -56,11 +95,91 @@ begin
   NInts.NSet(A, B, Size, Bits);
 end;
 
+procedure _StIF_NSet(var A: IInteger; const B: StreamArr; Format: TIntegerFormat);
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    Stream.WriteBuffer(Pointer(B)^, Length(B));
+    Stream.Position := 0;
+    NInts.NSet(A, Stream, Format);
+  finally
+    Stream.Free;
+  end;
+end;
+
+// unsuppoerted String/UnicodeString into TVarRec
+procedure _IIVR_NSet(var A: IInteger; const B: TVarRec);
+  procedure ConvertToAnsi;
+  var
+    R: TVarRec;
+    S: AnsiString;
+  begin
+    _MakeConstStr(B, R, S);
+    NInts.NSet(A, R);
+  end;
+begin
+  if B.VType = {vtUnicodeString}17 then
+    ConvertToAnsi
+  else
+    NInts.NSet(A, B);
+end;
+
+// unsuppoerted String/UnicodeString into ArrayOfConst
+procedure _IAAC_NSet(var A: IIntegerArray; const B: array of const);
+  procedure ConvertToAnsi;
+  var
+    R: TVarRecArray;
+    S: StringArr;
+  begin
+    _MakeArrayOfConst(B, R, S);
+    NInts.NSet(A, R);
+  end;
+begin
+  if _CheckArrayOfConst(B) then
+    ConvertToAnsi
+  else
+    NInts.NSet(A, B);
+end;
+
 function _ASB_NInt(const A; Size: Integer; Bits: Integer): IInteger;
 begin
   Result := NInts.NInt(A, Size, Bits);
 end;
 
+// different Delphi object declaration (TStream)
+function _StIF_NInt(const A: StreamArr; Format: TIntegerFormat): IInteger;
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    Stream.WriteBuffer(Pointer(A)^, Length(A));
+    Stream.Position := 0;
+    Result := NInts.NInt(Stream, Format);
+  finally
+    Stream.Free;
+  end;
+end;
+
+function _AC_NInt(const A: array of const): IIntegerArray;
+  procedure ConvertToAnsi;
+  var
+    R: TVarRecArray;
+    S: StringArr;
+  begin
+    _MakeArrayOfConst(A, R, S);
+    Result := NInts.NInt(R);
+  end;
+begin
+  if _CheckArrayOfConst(A) then
+    ConvertToAnsi
+  else
+    Result := NInts.NInt(A);
+end;
+
+// different AnsiString declaration als Result (missing codePage and elemSize, see System.StrRec)
 function _IIBa_NStr(const A: IInteger; Base: TBase): RetString;
 var
   Temp: AnsiString;
@@ -75,6 +194,80 @@ var
 begin
   Temp := NInts.NStr(A, Format);
   CurHookRefs.NewAnsiString(Pointer(Result), Pointer(Temp), Length(Temp), CP_ACP);
+end;
+
+procedure _StIF_NSave(const A: IInteger; var Data: StreamArr; Format: TIntegerFormat);
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    NInts.NSave(A, Stream, Format);
+    SetLength(Data, Stream.Size);
+    Stream.Position := 0;
+    Stream.ReadBuffer(Pointer(Data)^, Length(Data));
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure _StIF_NLoad(var R: IInteger; const Data: StreamArr; Format: TIntegerFormat);
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    Stream.WriteBuffer(Pointer(Data)^, Length(Data));
+    Stream.Position := 0;
+    NInts.NLoad(R, Stream, Format);
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure _MPSt_NSave(const P: IPowModPrecomputation; var Data: StreamArr);
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    NInts.NSave(P, Stream);
+    SetLength(Data, Stream.Size);
+    Stream.Position := 0;
+    Stream.ReadBuffer(Pointer(Data)^, Length(Data));
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure _MPSt_NLoad(var P: IPowModPrecomputation; const Data: StreamArr);
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    Stream.WriteBuffer(Pointer(Data)^, Length(Data));
+    Stream.Position := 0;
+    NInts.NLoad(P, Stream);
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure _SRAC_NRaise(Msg: PResStringRec; const Param: array of const);
+  procedure ConvertToAnsi;
+  var
+    R: TVarRecArray;
+    S: StringArr;
+  begin
+    _MakeArrayOfConst(Param, R, S);
+    NInts.NRaise(Msg, R);
+  end;
+begin
+  if _CheckArrayOfConst(Param) then
+    ConvertToAnsi
+  else
+    NInts.NRaise(Msg, Param);
 end;
 
 function _GetNStrFormat: TStrFormat;
@@ -95,9 +288,9 @@ exports
   NInts.NSet(var A: IInteger; const B: AnsiString; const Format: TStrFormat)                            name 'NInts_NSet_IIStSF',
   NInts.NSet(var A: IInteger; const B: AnsiString; Base: TBase)                                         name 'NInts_NSet_IIStBa',
   _ABSB_NSet{var A: IInteger; const B; Size: Integer; Bits: Integer}                                    name 'NInts_NSet_IIBInIn',
-  NInts.NSet(var A: IInteger; Stream: TStream; Format: TIntegerFormat)                                  name 'NInts_NSet_IIStIF',
-  NInts.NSet(var A: IInteger; const B: TVarRec)                                                         name 'NInts_NSet_IIVR',
-  NInts.NSet(var A: IIntegerArray; const B: array of const)                                             name 'NInts_NSet_IAAC',
+  _StIF_NSet{var A: IInteger; const B: StreamArr; Format: TIntegerFormat}                               name 'NInts_NSet_IIStIF',
+  _IIVR_NSet{var A: IInteger; const B: TVarRec}                                                         name 'NInts_NSet_IIVR',
+  _IAAC_NSet{var A: IIntegerArray; const B: array of const}                                             name 'NInts_NSet_IAAC',
   NInts.NSet(var A: IIntegerArray; const B: IIntegerArray)                                              name 'NInts_NSet_IAIA',
   NInts.NRnd(var A: IInteger; Bits: Integer; Sign: Boolean)                                             name 'NInts_NRnd_IIInBo',
   NInts.NInt(A: Integer)                                                                                name 'NInts_NInt_In',
@@ -106,8 +299,8 @@ exports
   NInts.NInt(const A: IInteger; Abs: Boolean)                                                           name 'NInts_NInt_IIBo',
    _ASB_NInt{const A; Size: Integer; Bits: Integer}                                                     name 'NInts_NInt_AInIn',
   NInts.NInt(const A: AnsiString; Base: TBase)                                                          name 'NInts_NInt_StBa',
-  NInts.NInt(Stream: TStream; Format: TIntegerFormat)                                                   name 'NInts_NInt_StIF',
-  NInts.NInt(const A: array of const)                                                                   name 'NInts_NInt_AC',
+  _StIF_NInt{const A: StreamArr; Format: TIntegerFormat}                                                name 'NInts_NInt_StIF',
+    _AC_NInt{const A: array of const}                                                                   name 'NInts_NInt_AC',
   NInts.NSgn(const A: IInteger; Extended: Boolean)                                                      name 'NInts_NSgn_IIBo',
   NInts.NSgn(var A: IInteger; Sign: Integer)                                                            name 'NInts_NSgn_IIIn',
   NInts.NOdd(const A: IInteger)                                                                         name 'NInts_NOdd_II',
@@ -280,9 +473,9 @@ exports
   NInts.NLong(const A: IInteger; RangeCheck: Boolean)                                                   name 'NInts_NLong_IIBo',
   NInts.NFloat(const A: IInteger; RangeCheck: Boolean)                                                  name 'NInts_NFloat_IIBo',
   NInts.NRange(const A: IInteger; Range: PTypeInfo; RaiseError: Boolean)                                name 'NInts_NRange_IITIBo',
-  NInts.NSave(const A: IInteger; Stream: TStream; Format: TIntegerFormat)                               name 'NInts_NSave_IIStIF',
+  _StIF_NSave{const A: IInteger; var Data:       StreamArr;  Format: TIntegerFormat}                    name 'NInts_NSave_IIStIF',
   NInts.NSave(const A: IInteger; const FileName: AnsiString; Format: TIntegerFormat)                    name 'NInts_NSave_IIStIF',
-  NInts.NLoad(var R: IInteger; Stream: TStream; Format: TIntegerFormat)                                 name 'NInts_NLoad_IIStIF',
+  _StIF_NLoad{var R: IInteger; const Data:     StreamArr;  Format: TIntegerFormat}                      name 'NInts_NLoad_IIStIF',
   NInts.NLoad(var R: IInteger; const FileName: AnsiString; Format: TIntegerFormat)                      name 'NInts_NLoad_IIStIF',
   NInts.NHash(var A: IInteger; Hash: TDECHashClass; Bits: Integer; Index: Cardinal)                     name 'NInts_NHash_IIHCInCa',
   NInts.NHash(var A: IInteger; const B: IInteger; Hash: TDECHashClass; Bits: Integer; Index: Cardinal)  name 'NInts_NHash_IIIIHCInCa',
@@ -296,8 +489,8 @@ exports
   NInts.NRedc(var A: IIntegerArray; const B: IIntegerArray; const M: IInteger; Inv2k: Cardinal)         name 'NInts_NRedc_IAIAIICa',
   NInts.NRedc(var A: IIntegerArray; const M: IInteger; Inv2k: Cardinal)                                 name 'NInts_NRedc_IAIICa',
   NInts.NSet(var P: IPowModPrecomputation; const B, M: IInteger; EMaxBitSize: Integer; EIsNeg: Boolean) name 'NInts_NSet_MPIIIIInBo',
-  NInts.NSave(const P: IPowModPrecomputation; Stream: TStream)                                          name 'NInts_NSave_MPSt',
-  NInts.NLoad(var P: IPowModPrecomputation; Stream: TStream)                                            name 'NInts_NLoad_MPSt',
+  _MPSt_NSave{const P: IPowModPrecomputation; var Data: StreamArr}                                      name 'NInts_NSave_MPSt',
+  _MPSt_NLoad{var P: IPowModPrecomputation; const Data: StreamArr}                                      name 'NInts_NLoad_MPSt',
   NInts.NSum(const A: IInteger)                                                                         name 'NInts_NSum_II',
   NInts.NMod(const A: Long96; B: Cardinal)                                                              name 'NInts_NMod_L9Ca',
   NInts.NSumModFactors(var Factors: IInteger; Bit: Integer)                                             name 'NInts_NSumModFactors_IIIn',
@@ -315,7 +508,7 @@ exports
   NInts.NBinarySplitting(var P, Q: IInteger; Count: Integer; Callback: TIIntegerBinarySplittingCallback; ImplicitShift: Boolean) name 'NInts_NBinarySplitting_XXX',
   NInts.NConfig{Flag: Cardinal}                                                                         name 'NInts_NConfig_Ca',
   NInts.NRaise(Msg: PResStringRec; const Param: AnsiString)                                             name 'NInts_NRaise_SRSt',
-  NInts.NRaise(Msg: PResStringRec; const Param: array of const)                                         name 'NInts_NRaise_SRAC',
+  _SRAC_NRaise{Msg: PResStringRec; const Param: array of const}                                         name 'NInts_NRaise_SRAC',
   NInts.NRaise(Msg: PResStringRec)                                                                      name 'NInts_NRaise_SR',
   NInts.NRaise_DivByZero                                                                                name 'NInts_NRaise_DivByZero_',
   NInts.NParseFormat{var F: TStrFormat; const B: AnsiString}                                            name 'NInts_NParseFormat_SFSt',
@@ -493,6 +686,38 @@ exports
 
 (***** NPolys *** NInts, CRC, SysUtils *****)
 
+procedure _IPAC_NSet(var A: IPoly; const B: array of const);
+  procedure ConvertToAnsi;
+  var
+    R: TVarRecArray;
+    S: StringArr;
+  begin
+    _MakeArrayOfConst(B, R, S);
+    NPolys.NSet(A, R);
+  end;
+begin
+  if _CheckArrayOfConst(B) then
+    ConvertToAnsi
+  else
+    NPolys.NSet(A, B);
+end;
+
+function _AC_NPoly(const B: array of const): IPoly;
+  procedure ConvertToAnsi;
+  var
+    R: TVarRecArray;
+    S: StringArr;
+  begin
+    _MakeArrayOfConst(B, R, S);
+    Result := NPolys.NPoly(R);
+  end;
+begin
+  if _CheckArrayOfConst(B) then
+    ConvertToAnsi
+  else
+    Result := NPolys.NPoly(B);
+end;
+
 function _IPBa_NStr(const A: IPoly; Base: TBase): RetString;
 var
   Temp: AnsiString;
@@ -511,14 +736,14 @@ end;
 
 exports
   NPolys.NSet(var A: IPoly; const B: IIntegerArray)                                  name 'NPolys_NSet_IPIA',
-  NPolys.NSet(var A: IPoly; const B: array of const)                                 name 'NPolys_NSet_IPAC',
+   _IPAC_NSet{var A: IPoly; const B: array of const}                                 name 'NPolys_NSet_IPAC',
   NPolys.NSet(var A: IPoly; const B: IPoly)                                          name 'NPolys_NSet_IPIP',
   NPolys.NSet(var A: IInteger; const B: IPoly; const X: IInteger; const M: IInteger) name 'NPolys_NSet_IIIPIIII',
   NPolys.NInt(const A: IPoly; const X: IInteger; const M: IInteger)                  name 'NPolys_NInt_IPIIII',
   NPolys.NSwp(var A, B: IPoly)                                                       name 'NPolys_NSwp_IPIP',
   NPolys.NSwp(var A: IPoly)                                                          name 'NPolys_NSwp_IP',
   NPolys.NPoly(const B: IIntegerArray)                                               name 'NPolys_NPoly_IA',
-  NPolys.NPoly(const B: array of const)                                              name 'NPolys_NPoly_AC',
+     _AC_NPoly{const B: array of const}                                              name 'NPolys_NPoly_AC',
   NPolys.NDegree(const A: IPoly)                                                     name 'NPolys_NDegree_IP',
   NPolys.NCmp(const A, B: IPoly)                                                     name 'NPolys_NCmp_IPIP',
   NPolys.NAdd(var A: IPoly; const B: IPoly)                                          name 'NPolys_NAdd_IPIP',
@@ -630,15 +855,58 @@ begin
   CurHookRefs.NewAnsiString(Pointer(Result), Pointer(Temp), Length(Temp), CP_ACP);
 end;
 
+procedure _IPrimSt_NSave(const ID: IIDPrime; var Data: StreamArr);
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    IDPrimes.NSave(ID, Stream);
+    SetLength(Data, Stream.Size);
+    Stream.Position := 0;
+    Stream.ReadBuffer(Pointer(Data)^, Length(Data));
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure _IPrimSt_NLoad(var ID: IIDPrime; const Data: StreamArr; RaiseError: Boolean);
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    Stream.WriteBuffer(Pointer(Data)^, Length(Data));
+    Stream.Position := 0;
+    IDPrimes.NLoad(ID, Stream, RaiseError);
+  finally
+    Stream.Free;
+  end;
+end;
+
+function _IPrimSt_NIDPrime(const Data: StreamArr): IIDPrime;
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    Stream.WriteBuffer(Pointer(Data)^, Length(Data));
+    Stream.Position := 0;
+    Result := IDPrimes.NIDPrime(Stream);
+  finally
+    Stream.Free;
+  end;
+end;
+
 exports
   IDPrimes.NSet(var P: IInteger; const ID: IIDPrime; CheckPrimality: Boolean; RaiseError: Boolean)  name 'IDPrimes_NSet_IIDPBoBo',
   IDPrimes.NInt(const ID: IIDPrime; CheckPrimality: Boolean)                                        name 'IDPrimes_NInt_DPBo',
   IDPrimes.NSet(var ID: IIDPrime; const S: AnsiString; RaiseError: Boolean)                         name 'IDPrimes_NSet_DPStBo',
   IDPrimes.NIDPrime(const ID: AnsiString)                                                           name 'IDPrimes_NIDPrime_St',
   _IPrimDP_NStr{const ID: IIDPrime): RetString}                                                     name 'IDPrimes_NStr_DP',
-  IDPrimes.NSave(const ID: IIDPrime; Stream: TStream)                                               name 'IDPrimes_NSave_DPSt',
-  IDPrimes.NLoad(var ID: IIDPrime; Stream: TStream; RaiseError: Boolean)                            name 'IDPrimes_NLoad_DPStBo',
-  IDPrimes.NIDPrime(Stream: TStream)                                                                name 'IDPrimes_NIDPrime_St',
+  _IPrimSt_NSave{const ID: IIDPrime; var Data: StreamArr}                                           name 'IDPrimes_NSave_DPSt',
+  _IPrimSt_NLoad{var ID: IIDPrime; const Data: StreamArr; RaiseError: Boolean}                      name 'IDPrimes_NLoad_DPStBo',
+  _IPrimSt_NIDPrime{const Data: StreamArr}                                                          name 'IDPrimes_NIDPrime_St',
   IDPrimes.NMake(var ID: IIDPrime; BitSize: Word; SeedBitSize: Word; const Residue: IInteger; const
     Modulus: IInteger; HashIndex: Word; HashClass: TDECHashClass; Callback: TIIntegerPrimeCallback) name 'IDPrimes_NMake_XXX';
 
@@ -671,6 +939,35 @@ exports
 
 (***** NGFPs *** NMath, NInts, IDPrimes, Classes *****)
 
+procedure _NGSt_NSave(const P: IGFpMulPrecomputation; var Data: StreamArr);
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    NGFPs.NSave(P, Stream);
+    SetLength(Data, Stream.Size);
+    Stream.Position := 0;
+    Stream.ReadBuffer(Pointer(Data)^, Length(Data));
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure _NGSt_NLoad(var P: IGFpMulPrecomputation; const Data: StreamArr);
+var
+  Stream: TStream;
+begin
+  Stream := TMemoryStream.Create;
+  try
+    Stream.WriteBuffer(Pointer(Data)^, Length(Data));
+    Stream.Position := 0;
+    NGFPs.NLoad(P, Stream);
+  finally
+    Stream.Free;
+  end;
+end;
+
 exports
   NGFPs.NECRaise(State: TECState)                                                                                  name 'NGFPs_NECRaise_ES',
   NGFPs.NECCheck(const E: IGFpEC; RaiseException: Boolean)                                                         name 'NGFPs_NECCheck_FCBo',
@@ -695,8 +992,8 @@ exports
   NGFPs.NEmpty(const A: I2Point)                                                                                   name 'NGFPs_NEmpty_2P',
   NGFPs.NEmpty(const A: I3Point)                                                                                   name 'NGFPs_NEmpty_3P',
   NGFPs.NSet(var P: IGFpMulPrecomputation; const B: I2Point; const E: IGFpEC; CMaxBitSize: Integer)                name 'NGFPs_NSet_MP2PFCIn',
-  NGFPs.NSave(const P: IGFpMulPrecomputation; Stream: TStream)                                                     name 'NGFPs_NSave_MPSt',
-  NGFPs.NLoad(var P: IGFpMulPrecomputation; Stream: TStream)                                                       name 'NGFPs_NLoad_MPSt',
+  _NGSt_NSave{const P: IGFpMulPrecomputation; var Data: StreamArr}                                                 name 'NGFPs_NSave_MPSt',
+  _NGSt_NLoad{var P: IGFpMulPrecomputation; const Data: StreamArr}                                                 name 'NGFPs_NLoad_MPSt',
   NGFPs.NMul_MontPB{var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC}                          name 'NGFPs_NMul_MontPB_2P2PIIFC',
   NGFPs.NMul_Affine{var A: I2Point; const B: I2Point; C: IInteger; const E: IGFpEC}                                name 'NGFPs_NMul_Affine_2P2PIIFC',
   NGFPs.NMul_Proj{var A: I2Point; const B: I2Point; const C: IInteger; const E: IGFpEC}                            name 'NGFPs_NMul_Proj_2P2PIIFC',
