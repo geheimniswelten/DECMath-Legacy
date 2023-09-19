@@ -1195,9 +1195,10 @@ procedure DECMath_RemoveMemoryStringHooks;                      external 'DECMat
 
 {$ENDREGION}
 
+var
+  HookRefs: THookRefs;
 initialization
   LoadAllImportsForDll('DECMath.dll');
-  var HookRefs: THookRefs;
   {$WARN SYMBOL_DEPRECATED OFF}
   GetMemoryManager(HookRefs.MemoryManager);
   {$WARN SYMBOL_DEPRECATED ON}
